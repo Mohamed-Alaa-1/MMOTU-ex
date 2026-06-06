@@ -48,7 +48,7 @@ xai:
   cam_thresholds: [0.5, 0.6, 0.7, 0.8, 0.9]
   cam_methods: ["gradcam", "gradcam_pp", "scorecam", "eigencam"]
   gradient_methods: ["saliency", "integrated_gradients"]
-  run_shap: true
+  run_shap: false
   shap_n_background: 100
   run_faithfulness: true               # Insertion/Deletion AUC
   faithfulness_n_steps: 50
