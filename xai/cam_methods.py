@@ -14,7 +14,7 @@ def reshape_transform_swin(tensor):
         result = tensor
     
     # result is (B, H, W, C), grad-cam expects (B, C, H, W)
-    result = result.permute(0, 3, 1, 2)
+    result = result.permute(0, 3, 1, 2).clone()
     return result
 
 def reshape_transform_vit(tensor):
@@ -23,7 +23,7 @@ def reshape_transform_vit(tensor):
     B, L, C = tensor.shape
     H = W = int(np.sqrt(L - 1))
     result = tensor[:, 1:, :].reshape(B, H, W, C)
-    result = result.permute(0, 3, 1, 2)
+    result = result.permute(0, 3, 1, 2).clone()
     return result
 
 class CAMExplainer:

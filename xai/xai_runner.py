@@ -43,10 +43,11 @@ class XAIRunner:
 
     def init_shap(self, background_dataset):
         if self.config.run_shap:
-            # Try to run on CPU to avoid OOM
+            # Use a dedicated CPU copy for SHAP to avoid device mismatch and OOM
+            import copy
+            self.shap_model = copy.deepcopy(self.model).cpu().eval()
             shap_device = torch.device('cpu')
-            self.shap_explainer = SHAPExplainer(self.model.to(shap_device), background_dataset, shap_device, n_background=self.config.shap_n_background)
-            self.model.to(self.device) # move back
+            self.shap_explainer = SHAPExplainer(self.shap_model, background_dataset, shap_device, n_background=self.config.shap_n_background)
             
     def run(self, output_dir: str) -> pd.DataFrame:
         Path(output_dir).mkdir(parents=True, exist_ok=True)
