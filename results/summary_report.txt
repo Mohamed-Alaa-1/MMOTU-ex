@@ -1,0 +1,114 @@
+====================================================
+      MMOTU XAI Pipeline - Summary Report
+====================================================
+
+Date Generated: 2026-06-07 13:55:56
+Run Name: exp_001
+Device: auto
+
+--- 1. Configuration ---
+Models Trained: densenet121, resnet50, efficientnet_b3, mobilenet_v3_large, swin_t
+Epochs: 60, Batch Size: 32
+Loss Function: weighted_ce
+XAI Methods: gradcam, gradcam_pp, scorecam, eigencam, saliency, integrated_gradients
+
+--- 2. Dataset Splitting ---
+Total Images: 1469
+class_label    0    1    2   3   4    5   6   7
+split                                          
+test          68   48   67  22  16   46  16  11
+train        219  135  217  52  39  179  66  33
+val           49   36   52  14  11   42  22   9
+
+--- 3. Classification Results ---
+densenet121:
+  Best Epoch: 31
+  Top-1 Acc:  0.7489
+  Top-2 Acc:  0.8255
+  Macro F1:   0.6983
+  Bal Acc:    0.7060
+
+resnet50:
+  Best Epoch: 33
+  Top-1 Acc:  0.7915
+  Top-2 Acc:  0.8766
+  Macro F1:   0.7275
+  Bal Acc:    0.7158
+
+efficientnet_b3:
+  Best Epoch: 27
+  Top-1 Acc:  0.7489
+  Top-2 Acc:  0.8340
+  Macro F1:   0.7122
+  Bal Acc:    0.7112
+
+mobilenet_v3_large:
+  Best Epoch: 41
+  Top-1 Acc:  0.7915
+  Top-2 Acc:  0.8638
+  Macro F1:   0.7162
+  Bal Acc:    0.7074
+
+swin_t:
+  Best Epoch: 51
+  Top-1 Acc:  0.7957
+  Top-2 Acc:  0.9021
+  Macro F1:   0.7146
+  Bal Acc:    0.7235
+
+--- 4. XAI Alignment Results (ExBale) ---
+Backbone: densenet121
+                          sc      cc    wcis  exbale
+xai_method                                          
+eigencam              0.2628  0.4223  0.3812  0.3050
+gradcam               0.3045  0.4292  0.4770  0.3315
+gradcam_pp            0.4977  0.4943  0.6749  0.4762
+integrated_gradients  0.0028  0.6069  0.0899  0.0407
+saliency              0.0029  0.5778  0.1093  0.0415
+scorecam              0.5405  0.5294  0.6916  0.5141
+
+Backbone: resnet50
+                          sc      cc    wcis  exbale
+xai_method                                          
+eigencam              0.0881  0.1864  0.2488  0.1192
+gradcam               0.2245  0.4655  0.4288  0.2950
+gradcam_pp            0.1727  0.3710  0.3585  0.2282
+integrated_gradients  0.0024  0.6917  0.0979  0.0430
+saliency              0.0020  0.6256  0.0941  0.0373
+scorecam              0.0653  0.1936  0.1925  0.0982
+
+Backbone: efficientnet_b3
+                          sc      cc    wcis  exbale
+xai_method                                          
+eigencam              0.1894  0.3630  0.3646  0.2401
+gradcam               0.2629  0.4835  0.4628  0.3256
+gradcam_pp            0.2664  0.4372  0.4783  0.3181
+integrated_gradients  0.0021  0.4981  0.0863  0.0330
+saliency              0.0022  0.5220  0.0971  0.0350
+scorecam              0.0816  0.3045  0.2046  0.1290
+
+Backbone: mobilenet_v3_large
+                          sc      cc    wcis  exbale
+xai_method                                          
+eigencam              0.2270  0.6634  0.4237  0.3449
+gradcam               0.2799  0.5942  0.4852  0.3692
+gradcam_pp            0.2184  0.3424  0.4312  0.2530
+integrated_gradients  0.0028  0.6525  0.0861  0.0416
+saliency              0.0025  0.6038  0.0912  0.0396
+scorecam              0.1119  0.2427  0.2575  0.1466
+
+Backbone: swin_t
+                          sc      cc    wcis  exbale
+xai_method                                          
+eigencam              0.4405  0.6861  0.6128  0.5030
+gradcam               0.1359  0.5133  0.2892  0.2237
+gradcam_pp            0.3010  0.6453  0.5094  0.3985
+integrated_gradients  0.0031  0.6958  0.0935  0.0447
+saliency              0.0043  0.7110  0.1176  0.0528
+scorecam              0.2950  0.6101  0.4755  0.3801
+
+--- 5. Saved Files Path ---
+Results Dir: results
+Figures Dir: results/figures
+Check visual plots for thresholds, ROCs, and qualitative comparisons.
+====================================================
