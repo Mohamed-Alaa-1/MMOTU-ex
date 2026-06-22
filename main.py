@@ -173,13 +173,12 @@ def _resolve_first_matching_key(mapping: dict, base_name: str) -> str | None:
     return None
 
 
-def generate_qualitative_comparison_figure(all_xai_results, trained_models, config, device, logger):
-    swin_key = _resolve_first_matching_key(all_xai_results, "swin_t")
-    if not swin_key:
-        logger.warning("No Swin Transformer XAI results available for qualitative figure generation.")
-        return
+def _build_qualitative_rows_for_model(model_name, all_xai_results, trained_models, config, device, logger):
+    result_key = _resolve_first_matching_key(all_xai_results, model_name)
+    if not result_key:
+        return None
 
-    result_df = all_xai_results[swin_key].copy()
+    result_df = all_xai_results[result_key].copy()
     if "cam_threshold" in result_df.columns:
         filtered_df = result_df[result_df["cam_threshold"] == 0.5].copy()
         if filtered_df.empty:
@@ -191,27 +190,24 @@ def generate_qualitative_comparison_figure(all_xai_results, trained_models, conf
     low_row = filtered_df[filtered_df["xai_method"] == "gradcam"].sort_values("exbale", ascending=True).head(1)
 
     if high_row.empty or low_row.empty:
-        logger.warning("Could not find high ExBale eigencam and low ExBale gradcam rows for the qualitative figure.")
-        return
+        return None
 
-    checkpoint_key = _resolve_first_matching_key(trained_models, swin_key)
+    checkpoint_key = _resolve_first_matching_key(trained_models, model_name)
     if not checkpoint_key:
-        logger.warning(f"No checkpoint found for {swin_key}; skipping qualitative figure generation.")
-        return
+        return None
 
     from PIL import Image
     from torchvision import transforms as _transforms
     from xai.cam_methods import CAMExplainer
     from xai.gradient_methods import GradientExplainer
-
     from models.factory import get_model
     from utils.checkpoint import load_checkpoint
 
-    model, _ = get_model("swin_t", num_classes=config.training.num_classes)
+    model, _ = get_model(model_name, num_classes=config.training.num_classes)
     load_checkpoint(trained_models[checkpoint_key], model)
     model = model.to(device).eval()
 
-    cam_explainer = CAMExplainer(model, "swin_t", device)
+    cam_explainer = CAMExplainer(model, model_name, device)
     grad_explainer = GradientExplainer(model, device)
 
     image_size = config.data.image_size
@@ -259,13 +255,45 @@ def generate_qualitative_comparison_figure(all_xai_results, trained_models, conf
     low_example = low_row.iloc[0]
 
     rows = [
-        build_row(high_example, f"High ExBale\nSwin Transformer Eigen CAM\nExBale = {high_example['exbale']:.2f}"),
-        build_row(low_example, f"Low ExBale\nSwin Transformer Grad CAM\nExBale = {low_example['exbale']:.2f}"),
+        build_row(high_example, f"High ExBale\n{model_name} Eigen CAM\nExBale = {high_example['exbale']:.2f}"),
+        build_row(low_example, f"Low ExBale\n{model_name} Grad CAM\nExBale = {low_example['exbale']:.2f}"),
     ]
 
-    save_path = Path(config.output.figures_dir) / "qualitative_comparison.pdf"
-    save_qualitative_comparison_figure(rows, str(save_path))
-    logger.info(f"Saved qualitative comparison figure to {save_path}")
+    return rows
+
+
+def generate_qualitative_comparison_figures(all_xai_results, trained_models, config, device, logger):
+    special_dir = Path(config.output.figures_dir) / "qualitative_comparisons"
+    special_dir.mkdir(parents=True, exist_ok=True)
+
+    generated_files = []
+    figure_index = 1
+
+    ordered_models = [m for m in config.training.models_to_train if m in all_xai_results]
+    for model_name in ordered_models:
+        rows = _build_qualitative_rows_for_model(model_name, all_xai_results, trained_models, config, device, logger)
+        if rows is None:
+            logger.warning(f"Skipping qualitative figure for {model_name}; matching rows or checkpoint not found.")
+            continue
+
+        if model_name == "swin_t":
+            primary_path = Path(config.output.figures_dir) / "qualitative_comparison.pdf"
+            save_qualitative_comparison_figure(rows, str(primary_path))
+            logger.info(f"Saved primary qualitative comparison figure to {primary_path}")
+
+        numbered_path = special_dir / f"qualitative_comparison{figure_index}_{model_name}.pdf"
+        save_qualitative_comparison_figure(rows, str(numbered_path))
+        generated_files.append(str(numbered_path))
+        logger.info(f"Saved qualitative comparison figure to {numbered_path}")
+        figure_index += 1
+
+    if generated_files:
+        manifest_path = special_dir / "qualitative_comparison_manifest.json"
+        with open(manifest_path, "w") as f:
+            json.dump({"figures": generated_files}, f, indent=2)
+        logger.info(f"Saved qualitative figure manifest to {manifest_path}")
+
+    return generated_files
 
 def main():
     args = parse_args()
@@ -636,7 +664,7 @@ def main():
                 
         if all_xai_results:
             plot_backbone_comparison(all_xai_results, save_path=f"{config.output.figures_dir}/backbone_comparison.png")
-            generate_qualitative_comparison_figure(all_xai_results, trained_models, config, device, logger)
+            generate_qualitative_comparison_figures(all_xai_results, trained_models, config, device, logger)
             
     # ── Stage 6: Summary ──
     if run_stage(6):

@@ -4,6 +4,7 @@ from typing import Dict, List, Optional
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
+from PIL import Image
 
 
 def _normalize_to_uint8(array: np.ndarray) -> np.ndarray:
@@ -42,6 +43,28 @@ def overlay_cam_on_image(original_img_np: np.ndarray, cam_np: np.ndarray, seg_ma
         cv2.drawContours(overlay, contours, -1, (0, 255, 0), 2)
 
     return overlay
+
+
+def _resolve_mask_array_from_row(row: Dict) -> np.ndarray:
+    mask_path = row.get("mask_path")
+    if mask_path and isinstance(mask_path, str) and Path(mask_path).exists():
+        mask_image = Image.open(mask_path).convert("L")
+        return (np.array(mask_image) > 0).astype(np.uint8) * 255
+
+    image_path = row.get("image_path")
+    if image_path and isinstance(image_path, str):
+        image_path = Path(image_path)
+        inferred_candidates = [
+            image_path.parent.parent / "annotations" / f"{image_path.stem}.PNG",
+            image_path.parent.parent / "annotations" / image_path.name,
+            image_path.parent.parent / "masks" / f"{image_path.stem}.PNG",
+        ]
+        for candidate in inferred_candidates:
+            if candidate.exists():
+                mask_image = Image.open(candidate).convert("L")
+                return (np.array(mask_image) > 0).astype(np.uint8) * 255
+
+    return np.zeros((224, 224), dtype=np.uint8)
 
 
 def save_comparison_figure(image_path: str, seg_mask: np.ndarray, cam_results_dict: dict, metrics_dict: dict, save_path: str):
@@ -101,7 +124,9 @@ def save_qualitative_comparison_figure(rows: List[Dict], save_path: str):
 
     for row_idx, row in enumerate(rows):
         image = row["image"]
-        mask = row["mask"]
+        mask = row.get("mask")
+        if mask is None:
+            mask = _resolve_mask_array_from_row(row)
         cams = row["cams"]
         row_label = row.get("row_label", "")
 

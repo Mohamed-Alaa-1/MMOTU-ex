@@ -90,7 +90,7 @@ def compute_tta_predictions(model: nn.Module, dataset, device: torch.device):
     # We iterate manually to access raw PIL images via paths
     for i in tqdm(range(len(dataset)), desc="TTA Inference"):
         # We need the path to re-open as PIL
-        # MMOTUDataset.__getitem__ returns (image, mask, label, path) if return_path=True
+        # MMOTUDataset.__getitem__ returns (image, mask, label, path, mask_path) if return_path=True
         # But image is already transformed. We want the raw image for TTA control.
         
         # Check if dataset has samples/metadata
@@ -100,7 +100,8 @@ def compute_tta_predictions(model: nn.Module, dataset, device: torch.device):
             label = int(row['class_label'])
         else:
             # Fallback to __getitem__ if possible, though less efficient for PIL re-read
-            _, _, label, img_path = dataset[i]
+            sample = dataset[i]
+            _, _, label, img_path = sample[:4]
             
         pil_image = Image.open(img_path).convert('RGB')
         probs = evaluator.predict(pil_image)

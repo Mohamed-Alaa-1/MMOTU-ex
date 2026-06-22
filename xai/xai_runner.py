@@ -69,7 +69,7 @@ class XAIRunner:
         for idx in tqdm(range(len(self.dataset)), desc=f"Running XAI - {self.model_name}"):
             try:
                 # Need to run individually to extract specific tensors, though we can batch if not for SHAP/Captum nuances
-                image_t, mask_t, true_label, image_path = self.dataset[idx]
+                image_t, mask_t, true_label, image_path, mask_path = self.dataset[idx]
                 
                 # Image tensor with batch dim
                 image_batch = image_t.unsqueeze(0).to(self.device)
@@ -86,7 +86,7 @@ class XAIRunner:
                 mask_np = mask_t.squeeze().cpu().numpy()
                 
                 # Process single image
-                img_results = self._process_single_image(image_batch, mask_np, predicted_class, true_label, confidence, is_correct, image_path)
+                img_results = self._process_single_image(image_batch, mask_np, predicted_class, true_label, confidence, is_correct, image_path, mask_path)
                 results.extend(img_results)
                 
             except Exception as e:
@@ -99,7 +99,7 @@ class XAIRunner:
         df.to_csv(Path(output_dir) / f"xai_results_{self.model_name}.csv", index=False)
         return df
 
-    def _process_single_image(self, image_tensor, mask_np, predicted_class, true_label, confidence, is_correct, image_path) -> list:
+    def _process_single_image(self, image_tensor, mask_np, predicted_class, true_label, confidence, is_correct, image_path, mask_path=None) -> list:
         img_results = []
         
         # 1. CAM Methods
@@ -125,6 +125,7 @@ class XAIRunner:
         
         base_info = {
             "image_path": image_path,
+            "mask_path": mask_path,
             "patient_id": patient_id,
             "class_label": true_label,
             "predicted_class": predicted_class,

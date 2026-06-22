@@ -73,7 +73,7 @@ class MMOTUDataset(Dataset):
             mask_t = transforms.ToTensor()(mask)
 
         if self.return_path:
-            return image_t, mask_t, label, img_path
+            return image_t, mask_t, label, img_path, mask_path
         return image_t, mask_t, label
 
 def get_dataloaders(splits_csv: str, config: any):

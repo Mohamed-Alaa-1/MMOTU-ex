@@ -83,7 +83,8 @@ class ModelEnsemble:
                 img_path = row['image_path']
                 label = int(row['class_label'])
             else:
-                _, _, label, img_path = dataset[i]
+                sample = dataset[i]
+                _, _, label, img_path = sample[:4]
                 
             pil_image = Image.open(img_path).convert('RGB')
             
