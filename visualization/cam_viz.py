@@ -67,6 +67,11 @@ def _resolve_mask_array_from_row(row: Dict) -> np.ndarray:
     return np.zeros((224, 224), dtype=np.uint8)
 
 
+def _render_visible_mask(mask_array: np.ndarray) -> np.ndarray:
+    mask_bool = np.asarray(mask_array) > 0
+    return mask_bool.astype(np.uint8) * 255
+
+
 def save_comparison_figure(image_path: str, seg_mask: np.ndarray, cam_results_dict: dict, metrics_dict: dict, save_path: str):
     """Legacy helper retained for method-wise CAM comparison figures."""
     img = cv2.imread(image_path)
@@ -127,6 +132,7 @@ def save_qualitative_comparison_figure(rows: List[Dict], save_path: str):
         mask = row.get("mask")
         if mask is None:
             mask = _resolve_mask_array_from_row(row)
+        mask = _render_visible_mask(mask)
         cams = row["cams"]
         row_label = row.get("row_label", "")
 
@@ -135,7 +141,8 @@ def save_qualitative_comparison_figure(rows: List[Dict], save_path: str):
             axes[row_idx, col_idx].axis('off')
 
         axes[row_idx, 0].imshow(image)
-        axes[row_idx, 1].imshow(mask, cmap='gray')
+        axes[row_idx, 1].imshow(mask, cmap='gray', vmin=0, vmax=255)
+        axes[row_idx, 1].contour(mask > 0, colors='lime', linewidths=1.4)
 
         for offset, method_name in enumerate(method_order, start=2):
             overlay = overlay_cam_on_image(image, cams[method_name], mask)

@@ -231,12 +231,6 @@ def _build_qualitative_rows_for_model(model_name, all_xai_results, trained_model
         display_image = np.array(display_resize(image_pil))
         model_input = image_transform(image_pil).unsqueeze(0).to(device)
 
-        if mask_path and isinstance(mask_path, str) and Path(mask_path).exists():
-            mask_pil = Image.open(mask_path).convert("L")
-        else:
-            mask_pil = Image.new("L", image_pil.size, 0)
-        display_mask = np.array(mask_transform(display_resize(mask_pil)).squeeze().cpu().numpy() > 0, dtype=np.uint8) * 255
-
         cams = {
             "gradcam": cam_explainer.compute_cam(model_input, pred_class, "gradcam"),
             "scorecam": cam_explainer.compute_cam(model_input, pred_class, "scorecam"),
@@ -246,7 +240,9 @@ def _build_qualitative_rows_for_model(model_name, all_xai_results, trained_model
 
         return {
             "image": display_image,
-            "mask": display_mask,
+            "mask": None,
+            "image_path": image_path,
+            "mask_path": mask_path,
             "cams": cams,
             "row_label": row_label,
         }
