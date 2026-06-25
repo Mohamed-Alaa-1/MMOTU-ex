@@ -57,14 +57,21 @@ class StatisticalAnalyzer:
             
         return stats_df
 
-    def compare_xai_methods(self, results_df: pd.DataFrame, metric: str = "exbale") -> dict:
+    def compare_xai_methods(self, results_df: pd.DataFrame, metric: str = "exbale", cam_threshold: float = 0.5) -> dict:
         """
         Pairwise Wilcoxon signed-rank test between XAI methods.
         Bonferroni correction is applied internally or reported raw.
         """
-        # Pivot the dataframe to have images as rows and methods as columns
-        pivot_df = results_df.pivot_table(index=['image_path', 'cam_threshold'], columns='xai_method', values=metric).dropna()
+        if 'cam_threshold' in results_df.columns:
+            df_thresh = results_df[np.isclose(results_df['cam_threshold'], cam_threshold)].copy()
+        else:
+            df_thresh = results_df.copy()
+
+        # Pivot the dataframe to have images as rows and methods as columns.
+        # One row per image is the paired sample unit for the signed-rank test.
+        pivot_df = df_thresh.pivot_table(index='image_path', columns='xai_method', values=metric).dropna()
         methods = pivot_df.columns.tolist()
+        n_images = len(pivot_df)
         
         n_methods = len(methods)
         p_values = np.ones((n_methods, n_methods))
@@ -95,19 +102,28 @@ class StatisticalAnalyzer:
         return {
             "methods": methods,
             "p_values": p_values.tolist(),
-            "effect_sizes": effect_sizes.tolist()
+            "effect_sizes": effect_sizes.tolist(),
+            "n_images": n_images,
+            "cam_threshold": cam_threshold
         }
 
-    def compare_backbones(self, all_results_dfs: dict, metric: str = "exbale") -> dict:
+    def compare_backbones(self, all_results_dfs: dict, metric: str = "exbale", cam_threshold: float = 0.5) -> dict:
         """
         One-way ANOVA across backbone mean ExBale scores.
         """
         # Combine all dfs
         combined_data = []
+        n_per_backbone = {}
         for bb, df in all_results_dfs.items():
+            if 'cam_threshold' in df.columns:
+                df_thresh = df[np.isclose(df['cam_threshold'], cam_threshold)].copy()
+            else:
+                df_thresh = df
+
             # Drop na
-            vals = df[metric].dropna().values
+            vals = df_thresh[metric].dropna().values
             combined_data.append(vals)
+            n_per_backbone[bb] = len(vals)
             
         try:
             F, p = f_oneway(*combined_data)
@@ -118,7 +134,12 @@ class StatisticalAnalyzer:
         flat_vals = []
         labels = []
         for bb, df in all_results_dfs.items():
-            vals = df[metric].dropna().values
+            if 'cam_threshold' in df.columns:
+                df_thresh = df[np.isclose(df['cam_threshold'], cam_threshold)].copy()
+            else:
+                df_thresh = df
+
+            vals = df_thresh[metric].dropna().values
             flat_vals.extend(vals)
             labels.extend([bb] * len(vals))
             
@@ -130,6 +151,9 @@ class StatisticalAnalyzer:
             
         return {
             "anova_p": p,
+            "anova_F": F,
+            "n_per_backbone": n_per_backbone,
+            "cam_threshold": cam_threshold,
             "tukey_results_df": tukey_df
         }
 
