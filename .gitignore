@@ -62,3 +62,4 @@ ENHANCEMENT_PLAN.md
 GEMINI.md
 experiment_run.log
 results/logs/exp_001.log
+*.log

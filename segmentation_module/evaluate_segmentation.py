@@ -43,7 +43,7 @@ from segmentation.dataset import MMOTUSegmentationDataset
 from segmentation_uncertainty.mc_dropout_segmentation import MCDropoutSegmentationEstimator
 from segmentation_uncertainty.ensemble_segmentation import DeepEnsembleSegmentationEstimator
 from segmentation_uncertainty.conformal_risk_control import SegmentationConformalRiskController
-from segmentation_uncertainty.selective_segmentation import selective_segmentation_risk_coverage
+from segmentation_uncertainty.selective_segmentation import selective_segmentation_risk_coverage, image_level_uncertainty
 from segmentation.metrics import dice_score
 
 
@@ -141,14 +141,23 @@ def main():
     else:
         print(f"Multiple models ({len(models)}) detected. Using DeepEnsembleSegmentationEstimator.")
         # Support heterogeneous ensembles (e.g. LAURA_BASE + LAURA_SMALL)
-        estimator = DeepEnsembleSegmentationEstimator(models)
+        estimator = DeepEnsembleSegmentationEstimator(models, device)
 
     # 3. Conformal Risk Control
     print(f"\nCalibrating Conformal Risk Control (Target FNR <= {args.alpha*100}%)...")
-    crc = SegmentationConformalRiskController(estimator)
+    crc = SegmentationConformalRiskController(alpha=args.alpha)
     
-    calib_info = crc.calibrate(val_images, val_masks, target_alpha=args.alpha)
-    calib_lambda = calib_info["lambda_hat"]
+    print("  -> Generating probability maps for calibration set...")
+    val_est = []
+    chunk_size = 16
+    for i in tqdm(range(0, len(val_images), chunk_size), desc="Val Inference"):
+        chunk = val_images[i:i+chunk_size]
+        res = estimator.predict(chunk)
+        val_est.append(res["mean_probs"])
+    val_prob_maps = np.concatenate(val_est, axis=0)
+    
+    crc.calibrate(val_prob_maps, val_masks.cpu().numpy())
+    calib_lambda = crc.lambda_star
     print(f"  -> Calibrated Threshold (λ_hat): {calib_lambda:.4f}")
     
     # 4. Standard vs Conformal Evaluation on Test Set
@@ -157,18 +166,28 @@ def main():
     conformal_dices = []
     conformal_fnrs = []
     
+    test_prob_maps_list = []
+    test_uncertainty_list = []
+    
     # Process test set in chunks to avoid OOM if test set is large
     chunk_size = 16
     for i in tqdm(range(0, len(test_images), chunk_size), desc="Test Inference"):
         img_chunk = test_images[i:i+chunk_size]
         mask_chunk = test_masks[i:i+chunk_size].cpu().numpy()
         
+        # Get raw estimates
+        raw_est = estimator.predict(img_chunk)
+        prob_maps = raw_est["mean_probs"]
+        
+        # Collect for Selective Segmentation later
+        test_prob_maps_list.append(prob_maps)
+        test_uncertainty_list.append(image_level_uncertainty(raw_est))
+        
         # Conformal predictions (calibrated)
-        conf_preds = crc.predict(img_chunk).cpu().numpy()
+        conf_preds = crc.predict(prob_maps)
         
         # Standard predictions (0.5 threshold on mean probs)
-        raw_est = estimator.predict(img_chunk)
-        std_preds = (raw_est["mean_probs"] >= 0.5).cpu().numpy()
+        std_preds = prob_maps >= 0.5
         
         for j in range(len(img_chunk)):
             gt = mask_chunk[j, 0] >= 0.5
@@ -194,7 +213,15 @@ def main():
 
     # 5. Selective Segmentation (AURC)
     print("\nCalculating Risk-Coverage (AURC)...")
-    aurc_results = selective_segmentation_risk_coverage(estimator, test_images, test_masks)
+    all_test_prob_maps = np.concatenate(test_prob_maps_list, axis=0)
+    all_test_uncertainty = np.concatenate(test_uncertainty_list, axis=0)
+    all_test_masks = test_masks.cpu().numpy()
+    
+    aurc_results = selective_segmentation_risk_coverage(
+        prob_maps=all_test_prob_maps,
+        gt_masks=all_test_masks,
+        uncertainty_scores=all_test_uncertainty
+    )
     
     aurc_value = aurc_results["aurc"]
     coverages = aurc_results["coverages"]
