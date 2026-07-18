@@ -54,6 +54,21 @@ for _p in [str(_ROOT), str(_SEG)]:
     if _p not in sys.path:
         sys.path.insert(0, _p)
 
+# ── ConfigNamespace stub ─────────────────────────────────────────────────────
+# Classification checkpoints were pickled with ConfigNamespace from main.py.
+# Register a stub on __main__ so torch.load can unpickle them from any script.
+class _ConfigNamespaceStub:
+    """Minimal stand-in for main.ConfigNamespace during checkpoint loading."""
+    def __init__(self, **kw):
+        self.__dict__.update(kw)
+    def __repr__(self):
+        return f"ConfigNamespaceStub({self.__dict__})"
+
+import sys as _sys
+_main = _sys.modules.get("__main__")
+if _main is not None and not hasattr(_main, "ConfigNamespace"):
+    _main.ConfigNamespace = _ConfigNamespaceStub
+
 # ── palette (monochromatic blue, project-wide convention) ───────────────────
 BLUE_DARK  = "#003366"
 BLUE_MED   = "#3366CC"
@@ -119,23 +134,26 @@ def _load_cls_model(checkpoint_path, model_name, num_classes, device):
     path = Path(checkpoint_path) if Path(checkpoint_path).is_absolute() \
         else _ROOT / checkpoint_path
     ckpt = torch.load(path, map_location=device, weights_only=False)
+    # Classification trainer saves: model_state_dict, optimizer_state_dict, config, …
     state = ckpt.get("model_state_dict", ckpt)
     model.load_state_dict(state, strict=False)
     model.eval()
     model.to(device)
-    print(f"  [cls]  Loaded {path.name}")
+    n = sum(p.numel() for p in model.parameters()) / 1e6
+    print(f"  [cls]  Loaded {path.name}  ({n:.2f}M params)")
     return model
 
 
 def _preprocess_seg(pil_image):
-    """Inpaint + grayscale, return (1,1,256,256) float32 tensor in [0,1]."""
-    from PIL import Image as PILImage
-    # inpaint overlays
-    img_np = np.array(pil_image.convert("RGB"))
-    img_np = inpaint_overlay_pixels(img_np)
-    gray   = cv2.cvtColor(img_np, cv2.COLOR_RGB2GRAY)
-    gray   = cv2.resize(gray, (256, 256), interpolation=cv2.INTER_LINEAR)
-    t      = torch.from_numpy(gray.astype(np.float32) / 255.0)
+    """Inpaint overlays on a PIL RGB image, convert to grayscale,
+    return (1,1,256,256) float32 tensor in [0,1]."""
+    # inpaint_overlay_pixels expects and returns a PIL Image
+    pil_rgb    = pil_image.convert("RGB")
+    pil_clean  = inpaint_overlay_pixels(pil_rgb)          # PIL Image back
+    img_np     = np.array(pil_clean, dtype=np.uint8)      # [H,W,3] numpy
+    gray       = cv2.cvtColor(img_np, cv2.COLOR_RGB2GRAY) # [H,W]
+    gray       = cv2.resize(gray, (256, 256), interpolation=cv2.INTER_LINEAR)
+    t          = torch.from_numpy(gray.astype(np.float32) / 255.0)
     return t.unsqueeze(0).unsqueeze(0)          # [1,1,256,256]
 
 
