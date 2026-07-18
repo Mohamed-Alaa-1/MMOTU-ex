@@ -48,7 +48,7 @@ _PROJECT_ROOT = _HERE.parent                       # f:\GitHub repos\MMOTU-ex\
 if str(_HERE) not in sys.path:
     sys.path.insert(0, str(_HERE))
 
-from segmentation.models.auravit_config import LAURA_SMALL
+from segmentation.models.auravit_config import LAURA_BASE, LAURA_SMALL, LAURA_TINY
 from segmentation.models.lightweight_auravit import LightweightAuraViT
 from segmentation.dataset import get_segmentation_dataloaders
 from segmentation.trainer import SegmentationTrainer, setup_segmentation_logger
@@ -60,7 +60,7 @@ from segmentation.trainer import SegmentationTrainer, setup_segmentation_logger
 
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(
-        description="Train LightweightAuraViT (LAURA_SMALL) for MMOTU segmentation.",
+        description="Train LightweightAuraViT for MMOTU segmentation.",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
 
@@ -78,8 +78,13 @@ def parse_args() -> argparse.Namespace:
         help="Directory for .log and _history.csv files.",
     )
     p.add_argument(
-        "--run_name", default="laura_small",
+        "--run_name", default="laura_run",
         help="Stem used for checkpoint and log filenames.",
+    )
+    p.add_argument(
+        "--architecture", default="small",
+        choices=["base", "small", "tiny"],
+        help="LAURA variant to train.",
     )
     p.add_argument(
         "--resume", default=None,
@@ -160,7 +165,7 @@ def main() -> None:
     # -----------------------------------------------------------------------
     logger = setup_segmentation_logger(log_dir, args.run_name)
     logger.info("=" * 70)
-    logger.info("MMOTU Segmentation Training — LightweightAuraViT (LAURA_SMALL)")
+    logger.info(f"MMOTU Segmentation Training — LightweightAuraViT (LAURA_{args.architecture.upper()})")
     logger.info("=" * 70)
     logger.info(f"Device        : {device}")
     logger.info(f"Seed          : {args.seed}")
@@ -178,11 +183,18 @@ def main() -> None:
     # -----------------------------------------------------------------------
     # Model
     # -----------------------------------------------------------------------
-    model = LightweightAuraViT(LAURA_SMALL)
+    arch_map = {
+        "base": LAURA_BASE,
+        "small": LAURA_SMALL,
+        "tiny": LAURA_TINY,
+    }
+    model_cfg = arch_map[args.architecture]
+    
+    model = LightweightAuraViT(model_cfg)
     n_params_total = sum(p.numel() for p in model.parameters())
     n_params_train = sum(p.numel() for p in model.parameters() if p.requires_grad)
     logger.info(
-        f"Model         : LAURA_SMALL  "
+        f"Model         : LAURA_{args.architecture.upper()}  "
         f"total={n_params_total/1e6:.2f}M  trainable={n_params_train/1e6:.2f}M"
     )
 
