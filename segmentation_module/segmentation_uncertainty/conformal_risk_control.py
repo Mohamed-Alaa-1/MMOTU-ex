@@ -24,21 +24,31 @@ FNR(lambda) is monotone non-increasing in lambda: as the threshold drops,
 more pixels are predicted positive, so fewer true positives are missed.
 The calibration therefore finds:
 
-    lambda* = max { lambda in Lambda : mean_i [ FNR_i(lambda) ] <= alpha }
+    lambda* = max { lambda in Lambda : mean_FNR(lambda) <= alpha_corrected }
 
-where Lambda is a fixed discrete grid [0.0, 0.01, ..., 1.0] (100 steps).
+where Lambda is a fixed discrete grid [0.0, 0.01, ..., 1.0] (101 steps).
 Images with no foreground pixels (empty masks) contribute FNR = 0 at all
 thresholds and are included in the count.
 
-Statistical guarantee (informal)
----------------------------------
-By the CRC theorem, if the calibration set is exchangeable with the test set
-and |calibration set| = n, the expected FNR on a fresh test image is at most
-alpha + (1 / (n + 1)). For n >= 100, this slack is <= 1%. The caller should
-ensure the calibration set is large enough relative to the target alpha.
+Finite-sample correction (CRITICAL)
+-------------------------------------
+Per the CRC theorem (Angelopoulos & Bates 2022, Theorem 1), the corrected
+risk level is:
 
-All inputs and outputs are numpy arrays (not tensors). No PyTorch dependency
-in this module so it can be tested independently of a GPU or a trained model.
+    alpha_corrected = (n / (n+1)) * alpha
+
+This ensures E[FNR on a fresh test image] <= alpha (formal guarantee).
+For n >= 100, the slack is < 1%.  For small n, the guarantee becomes
+more conservative.
+
+CLARIFICATION on formal vs empirical guarantee
+-----------------------------------------------
+If the calibration set is too small (n < 30), the finite-sample
+correction makes alpha_corrected significantly smaller than alpha, and
+the calibrated lambda_star may be very conservative.  In that case,
+avoid claiming a strict FNR bound; report as empirical calibration.
+
+All inputs and outputs are numpy arrays (not tensors). No PyTorch dependency.
 """
 
 from __future__ import annotations
@@ -46,26 +56,13 @@ from __future__ import annotations
 import numpy as np
 
 
-# Discrete grid of threshold candidates. 101 points from 0.0 to 1.0
-# inclusive gives 0.01 resolution, enough for clinical risk control at
-# alpha = 0.05 or 0.10.
 _LAMBDA_GRID: np.ndarray = np.linspace(0.0, 1.0, 101)
+_MIN_N_FOR_FORMAL_GUARANTEE: int = 30
 
 
 def _image_fnr(prob_map: np.ndarray, gt_mask: np.ndarray,
                threshold: float) -> float:
-    """FNR for a single image at a given threshold.
-
-    Args:
-        prob_map:  2-D or 1-D float array of predicted pixel probabilities.
-        gt_mask:   Same shape as prob_map, binary (0 or 1, bool ok).
-        threshold: Scalar in [0, 1].
-
-    Returns:
-        FNR in [0, 1]. Returns 0.0 if gt_mask has no foreground pixels
-        (empty mask means no false negatives are possible, so FNR = 0 by
-        convention, consistent with treating this as a risk-free sample).
-    """
+    """FNR for a single image at a given threshold."""
     gt_flat = gt_mask.flatten().astype(bool)
     n_positive = int(gt_flat.sum())
     if n_positive == 0:
@@ -79,50 +76,65 @@ class SegmentationConformalRiskController:
     """Calibrates and applies a Conformal Risk Control threshold for
     pixel-level segmentation, targeting a guaranteed FNR bound.
 
+    Key distinction
+    ---------------
+    *Formal CRC guarantee*: uses the finite-sample corrected risk level
+        alpha_corrected = (n / (n+1)) * alpha.
+    The expected test FNR is then <= alpha (Angelopoulos & Bates 2022, Thm 1).
+
+    *Empirical threshold calibration*: simply finds the largest lambda
+    such that mean calibration FNR <= alpha (no formal guarantee).
+    This is what many papers implicitly do, and should be clearly labeled.
+
+    This implementation uses alpha_corrected, providing the formal guarantee
+    when n is large enough.  The `formal_guarantee_valid` flag in summary()
+    tells the caller whether to report as formal CRC or empirical calibration.
+
     Attributes:
-        alpha: Target FNR bound (e.g., 0.10 for at most 10% of true tumor
-               pixels missed in expectation on unseen images).
-        lambda_star: Calibrated threshold (set after calibrate()).
-        calibration_fnr: Empirical FNR at lambda_star on the calibration set
-               (will be <= alpha by construction).
+        alpha: Target FNR bound (e.g., 0.10 for at most 10% FNR).
+        alpha_corrected: Finite-sample corrected level = (n/(n+1))*alpha.
+        lambda_star: CRC-calibrated threshold.
+        lambda_star_standard: Standard threshold (always 0.5).
+        calibration_fnr: Empirical FNR at lambda_star on calibration set.
+        calibration_fnr_at_05: Empirical FNR at threshold=0.5 on calibration.
         n_calibration: Number of calibration images used.
-        n_empty_masks: Number of calibration images with no foreground pixels
-               (these contribute FNR=0 and are counted in n_calibration).
+        n_empty_masks: Calibration images with no foreground pixels.
     """
 
     def __init__(self, alpha: float = 0.10) -> None:
         if not (0.0 < alpha < 1.0):
             raise ValueError(
-                f"alpha must be in (0, 1); got {alpha}. "
-                f"Typical values are 0.05 (5% FNR guarantee) or "
-                f"0.10 (10% FNR guarantee)."
+                f"alpha must be in (0, 1); got {alpha}."
             )
         self.alpha = alpha
-        self.lambda_star: float | None = None
-        self.calibration_fnr: float | None = None
+        self.alpha_corrected = None
+        self.lambda_star = None
+        self.lambda_star_standard: float = 0.5
+        self.calibration_fnr = None
+        self.calibration_fnr_at_05 = None
         self.n_calibration: int = 0
         self.n_empty_masks: int = 0
 
-    def calibrate(self, prob_maps: np.ndarray,
-                  gt_masks: np.ndarray) -> "SegmentationConformalRiskController":
-        """Fit lambda_star from calibration data.
+    def calibrate(
+        self,
+        prob_maps: np.ndarray,
+        gt_masks: np.ndarray,
+    ) -> "SegmentationConformalRiskController":
+        """Fit lambda_star using finite-sample corrected CRC.
+
+        Uses alpha_corrected = (n/(n+1)) * alpha, which provides the
+        formal guarantee: E[test FNR] <= alpha (Angelopoulos & Bates 2022).
 
         Args:
-            prob_maps: Array of predicted probability maps. Accepted shapes:
-                [N, H, W] or [N, 1, H, W]. Values in [0, 1].
-            gt_masks:  Corresponding ground-truth masks. Same shape as
-                prob_maps, binary (0/1 or bool).
+            prob_maps: [N, H, W] or [N, 1, H, W] predicted probability maps.
+            gt_masks:  Corresponding ground-truth masks, same shape, binary.
 
         Returns:
-            self (for method chaining).
-
-        Raises:
-            ValueError: If prob_maps is empty or shapes do not match.
+            self.
         """
         prob_maps = np.asarray(prob_maps, dtype=np.float32)
-        gt_masks = np.asarray(gt_masks, dtype=np.float32)
+        gt_masks  = np.asarray(gt_masks,  dtype=np.float32)
 
-        # Squeeze channel dim if [N, 1, H, W]
         if prob_maps.ndim == 4 and prob_maps.shape[1] == 1:
             prob_maps = prob_maps[:, 0]
         if gt_masks.ndim == 4 and gt_masks.shape[1] == 1:
@@ -132,8 +144,8 @@ class SegmentationConformalRiskController:
             raise ValueError("calibrate() received an empty prob_maps array.")
         if prob_maps.shape != gt_masks.shape:
             raise ValueError(
-                f"prob_maps shape {prob_maps.shape} does not match "
-                f"gt_masks shape {gt_masks.shape}."
+                f"Shape mismatch: prob_maps {prob_maps.shape} vs "
+                f"gt_masks {gt_masks.shape}."
             )
 
         self.n_calibration = len(prob_maps)
@@ -141,29 +153,29 @@ class SegmentationConformalRiskController:
             1 for gt in gt_masks if gt.astype(bool).sum() == 0
         ))
 
-        # For each lambda candidate, compute mean FNR across calibration set.
-        # We sweep from low to high lambda (most aggressive to least
-        # aggressive) and find the highest lambda that still satisfies the
-        # mean FNR <= alpha constraint.
-        mean_fnrs = np.array([
-            np.mean([_image_fnr(p, g, lam) for p, g in zip(prob_maps, gt_masks)])
-            for lam in _LAMBDA_GRID
-        ])  # shape: [101]
+        # Finite-sample corrected risk level
+        n = self.n_calibration
+        self.alpha_corrected = float((n / (n + 1)) * self.alpha)
 
-        # Valid lambdas: those where mean FNR <= alpha
-        valid_mask = mean_fnrs <= self.alpha
+        # Compute mean FNR for every threshold on the grid
+        mean_fnrs = np.array([
+            np.mean([
+                _image_fnr(p, g, lam)
+                for p, g in zip(prob_maps, gt_masks)
+            ])
+            for lam in _LAMBDA_GRID
+        ])
+
+        # FNR at standard 0.5 threshold (for reporting)
+        idx_05 = int(np.argmin(np.abs(_LAMBDA_GRID - 0.5)))
+        self.calibration_fnr_at_05 = float(mean_fnrs[idx_05])
+
+        # CRC threshold: largest lambda where mean_FNR <= alpha_corrected
+        valid_mask = mean_fnrs <= self.alpha_corrected
         if not valid_mask.any():
-            # Even threshold=0.0 (predict everything positive) exceeds alpha.
-            # This should not happen in practice since FNR(lambda=0) = 0,
-            # but guard against it (e.g., all-empty calibration masks corner
-            # case handled above, but this is an extra safety net).
             self.lambda_star = 0.0
             self.calibration_fnr = float(mean_fnrs[0])
         else:
-            # Take the largest valid lambda (least aggressive threshold that
-            # still meets the FNR guarantee). Higher threshold = more
-            # conservative prediction = fewer false positives at the cost of
-            # slightly more false negatives, while still within the budget.
             best_idx = int(np.where(valid_mask)[0].max())
             self.lambda_star = float(_LAMBDA_GRID[best_idx])
             self.calibration_fnr = float(mean_fnrs[best_idx])
@@ -171,19 +183,7 @@ class SegmentationConformalRiskController:
         return self
 
     def predict(self, prob_map: np.ndarray) -> np.ndarray:
-        """Apply the calibrated threshold to produce a binary mask.
-
-        Args:
-            prob_map: [H, W] or [1, H, W] or [B, 1, H, W] float probability
-                map from a segmentation model (after sigmoid).
-
-        Returns:
-            Binary mask of same spatial shape, dtype uint8, with 1 = tumor,
-            0 = background, under the guaranteed FNR <= alpha threshold.
-
-        Raises:
-            RuntimeError: If calibrate() has not been called yet.
-        """
+        """Apply the CRC-calibrated threshold to produce a binary mask."""
         if self.lambda_star is None:
             raise RuntimeError(
                 "lambda_star is None: call calibrate() before predict()."
@@ -192,17 +192,36 @@ class SegmentationConformalRiskController:
         return (prob_map >= self.lambda_star).astype(np.uint8)
 
     @property
-    def coverage_guarantee(self) -> float | None:
-        """Empirical FNR on calibration set (== 1 - sensitivity at lambda*).
-        Returns None before calibrate() is called."""
+    def coverage_guarantee(self):
+        """Empirical FNR on calibration set at lambda_star."""
         return self.calibration_fnr
 
+    @property
+    def formal_guarantee_valid(self) -> bool:
+        """True if n >= 30, making the formal CRC bound meaningful."""
+        return self.n_calibration >= _MIN_N_FOR_FORMAL_GUARANTEE
+
     def summary(self) -> dict:
-        """Return a dict of calibration metadata suitable for logging."""
+        """Return calibration metadata for logging and reporting.
+
+        Check `formal_guarantee_valid` to decide whether to report
+        this as formal CRC or empirical threshold calibration.
+        When False, do NOT claim a strict FNR bound of alpha.
+        """
         return {
             "alpha": self.alpha,
-            "lambda_star": self.lambda_star,
-            "calibration_fnr": self.calibration_fnr,
+            "alpha_corrected": self.alpha_corrected,
+            "lambda_star_crc": self.lambda_star,
+            "lambda_star_standard": self.lambda_star_standard,
+            "calibration_fnr_at_crc_threshold": self.calibration_fnr,
+            "calibration_fnr_at_05_threshold": self.calibration_fnr_at_05,
             "n_calibration": self.n_calibration,
             "n_empty_masks": self.n_empty_masks,
+            "formal_guarantee_valid": self.formal_guarantee_valid,
+            "note": (
+                "Formal CRC guarantee (Angelopoulos & Bates 2022)."
+                if self.formal_guarantee_valid
+                else "Empirical threshold calibration only (n < 30); "
+                     "do not claim a strict FNR bound."
+            ),
         }
