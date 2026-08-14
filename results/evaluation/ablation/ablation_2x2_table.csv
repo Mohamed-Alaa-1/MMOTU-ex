@@ -1,0 +1,5 @@
+model,test_set,mean_dice,mean_iou
+Model A Inpainted,Clean (inpainted),0.630460117238152,0.5753304545831126
+Model A Inpainted,Raw (calipers),0.6081834548430842,0.5523626428215627
+Model B Shortcut,Clean (inpainted),0.6233790455395283,0.5626035056833317
+Model B Shortcut,Raw (calipers),0.6271014227788593,0.566988752463448

@@ -1,0 +1,14 @@
+{
+    "models_used": [
+        "laura_small_best.pt",
+        "laura_base_model2_best.pt"
+    ],
+    "estimator": "DeepEnsemble",
+    "test_images": 294,
+    "conformal_target_alpha_fnr": 0.1,
+    "conformal_calibrated_lambda": 0.0,
+    "test_mean_standard_dice": 0.6404628713347323,
+    "test_mean_conformal_dice": 0.1774726214021787,
+    "test_mean_conformal_fnr": 0.0,
+    "test_aurc": 0.31289031722283056
+}
