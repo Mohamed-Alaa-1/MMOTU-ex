@@ -156,7 +156,7 @@ def main():
     
     if len(models) == 1:
         print(f"Single model detected. Using MCDropoutSegmentationEstimator (samples={args.mc_samples}).")
-        estimator = MCDropoutSegmentationEstimator(models[0], num_samples=args.mc_samples)
+        estimator = MCDropoutSegmentationEstimator(models[0], device=device, n_samples=args.mc_samples)
     else:
         print(f"Multiple models ({len(models)}) detected. Using DeepEnsembleSegmentationEstimator.")
         # Support heterogeneous ensembles (e.g. LAURA_BASE + LAURA_SMALL)

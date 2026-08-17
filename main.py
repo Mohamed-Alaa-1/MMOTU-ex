@@ -503,9 +503,21 @@ def main():
         
         ensemble = build_ensemble_from_checkpoints(trained_models, config.training.models_to_train, config, device)
         if len(ensemble.models) > 0:
-            probs, labels, _ = ensemble.predict_dataset(test_dataset)
+            probs, labels, paths = ensemble.predict_dataset(test_dataset)
             preds = np.argmax(probs, axis=1)
             metrics = compute_classification_metrics(preds, labels, probs, num_classes=config.training.num_classes)
+            
+            import pandas as pd
+            pred_df = pd.DataFrame({
+                "image_path": paths,
+                "true_label": labels,
+                "predicted_label": preds
+            })
+            for c in range(probs.shape[1]):
+                pred_df[f"prob_class_{c}"] = probs[:, c]
+            pred_dir = Path(config.output.results_dir) / "predictions"
+            pred_dir.mkdir(parents=True, exist_ok=True)
+            pred_df.to_csv(pred_dir / "ensemble_test_predictions.csv", index=False)
             
             logger.info(f"Ensemble Test Top-1: {metrics['top1_acc']:.4f}")
             logger.info(f"Ensemble Test Macro F1: {metrics['macro_f1']:.4f}")
@@ -569,6 +581,18 @@ def main():
                 probs, labels, paths = compute_tta_predictions(tta_model, test_dataset_with_paths, device)
                 preds = np.argmax(probs, axis=1)
 
+                import pandas as pd
+                pred_df = pd.DataFrame({
+                    "image_path": paths,
+                    "true_label": labels,
+                    "predicted_label": preds
+                })
+                for c in range(probs.shape[1]):
+                    pred_df[f"prob_class_{c}"] = probs[:, c]
+                pred_dir = Path(config.output.results_dir) / "predictions"
+                pred_dir.mkdir(parents=True, exist_ok=True)
+                pred_df.to_csv(pred_dir / f"{model_name}_test_predictions.csv", index=False)
+
                 metrics = compute_classification_metrics(
                     preds, np.array(labels), probs,
                     num_classes=config.training.num_classes
@@ -627,8 +651,8 @@ def main():
                 
         if gradcam_results:
             backbone_comparison = stat.compare_backbones(gradcam_results)
-            if not backbone_comparison['tukey_results_df'].empty:
-                backbone_comparison['tukey_results_df'].to_csv(f"{config.output.results_dir}/backbone_tukey_hsd.csv", index=False)
+            if 'bootstrap_results' in backbone_comparison and not backbone_comparison['bootstrap_results'].empty:
+                backbone_comparison['bootstrap_results'].to_csv(f"{config.output.results_dir}/backbone_bootstrap_results.csv", index=False)
 
 
     # ── Stage 4.5: Uncertainty Quantification and Conformal Risk Control ──

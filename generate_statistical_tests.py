@@ -27,7 +27,6 @@ from evaluation.ensemble import ModelEnsemble
 from models.factory import get_model
 from utils.checkpoint import load_checkpoint
 from data.dataset import MMOTUDataset
-from data.transforms import get_transforms
 from omegaconf import OmegaConf
 
 
@@ -139,7 +138,13 @@ def main():
     print("\n--- 2. Running Classification Ensemble McNemar Test ---")
     try:
         config = OmegaConf.load("configs/default.yaml")
-        _, val_transforms = get_transforms(config.dataset.image_size)
+        
+        from torchvision import transforms
+        val_transforms = transforms.Compose([
+            transforms.Resize((config.data.image_size, config.data.image_size)),
+            transforms.ToTensor(),
+            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+        ])
 
         splits_df = pd.read_csv("results/splits.csv")
         test_df   = splits_df[splits_df["split"] == "test"].reset_index(drop=True)
