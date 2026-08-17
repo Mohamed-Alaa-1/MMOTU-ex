@@ -1,0 +1,22 @@
+=== 1. Caliper Ablation Effect Sizes ===
+
+2×2 Matrix (Mean Dice  [95% CI]):
+  Model A (Inpainted) | Clean: 0.6305 [0.5838, 0.6759]  | Raw: 0.6082 [0.5602, 0.6555]
+  Model B (Shortcut)  | Clean: 0.6234 [0.5785, 0.6688]  | Raw: 0.6271 [0.5825, 0.6718]
+
+Test 1: Inpainting Gain (Model A Clean vs Model B Clean)
+  Mean Difference: +0.0071 Dice
+  Cohen's d:       +0.0177
+  Wilcoxon stat:   17451.0000
+  p-value:         8.9077e-01
+  Significant (p<0.05): False
+
+Test 2: Shortcut Inflation (Model B Raw vs Model B Clean)
+  Mean Difference: +0.0037 Dice
+  Cohen's d:       +0.0094
+  Wilcoxon stat:   15916.0000
+  p-value:         4.4633e-01
+  Significant (p<0.05): False
+
+=== 2. Classification Ensemble McNemar Test ===
+Error running test: Can't get attribute 'ConfigNamespace' on <module '__main__' from '/teamspace/studios/this_studio/MMOTU-ex/generate_statistical_tests.py'>

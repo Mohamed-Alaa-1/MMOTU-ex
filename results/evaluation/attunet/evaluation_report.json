@@ -1,0 +1,52 @@
+{
+    "models_used": [
+        "attunet_run_best.pt"
+    ],
+    "estimator": "MCDropout",
+    "test_images": 294,
+    "model_params": {
+        "model_0": {
+            "total_params_M": 31.909,
+            "trainable_params_M": 31.909
+        }
+    },
+    "inference_fps": 5.66,
+    "conformal_target_alpha_fnr": 0.1,
+    "conformal_alpha_corrected": 0.09957627118644069,
+    "conformal_calibrated_lambda": 0.0,
+    "formal_guarantee_valid": true,
+    "crc_note": "Formal CRC guarantee (Angelopoulos & Bates 2022).",
+    "val_fnr_at_05": 0.21742028041039813,
+    "test_mean_standard_dice": 0.6468458340248918,
+    "test_mean_standard_dice_ci": [
+        0.6021627492828547,
+        0.6920696169219539
+    ],
+    "test_mean_standard_iou": 0.5919639995891355,
+    "test_mean_standard_iou_ci": [
+        0.5479852283957733,
+        0.636111553061517
+    ],
+    "test_mean_standard_fnr": 0.2910879675944897,
+    "test_mean_standard_fnr_ci": [
+        0.24633574273356373,
+        0.3362617882669076
+    ],
+    "val_fnr_at_crc": 0.0,
+    "test_mean_conformal_dice": 0.1774726214021787,
+    "test_mean_conformal_dice_ci": [
+        0.15819280999273572,
+        0.19790005028707358
+    ],
+    "test_mean_conformal_iou": 0.10855398372864022,
+    "test_mean_conformal_iou_ci": [
+        0.09555023349199313,
+        0.12256121862636211
+    ],
+    "test_mean_conformal_fnr": 0.0,
+    "test_mean_conformal_fnr_ci": [
+        0.0,
+        0.0
+    ],
+    "test_aurc": 0.3641710411669504
+}

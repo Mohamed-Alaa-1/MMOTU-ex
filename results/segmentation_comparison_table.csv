@@ -1,0 +1,12 @@
+model,source,dice,dice_ci,iou,iou_ci,recall,precision,params_M,fps,seeds
+U-Net (Zhao et al. 2022),"Zhao et al. 2022, Table 2",0.7231,—,0.6015,—,—,—,31.04,—,1
+Att-UNet (Zhao et al. 2022),"Zhao et al. 2022, Table 2",0.7389,—,0.6198,—,—,—,34.88,—,1
+TransUNet (Zhao et al. 2022),"Zhao et al. 2022, Table 2",0.7102,—,0.5934,—,—,—,105.28,—,1
+SwinUNet (Zhao et al. 2022),"Zhao et al. 2022, Table 2",0.7156,—,0.5987,—,—,—,27.14,—,1
+DeepLabV3+ (Zhao et al. 2022),"Zhao et al. 2022, Table 2",0.7198,—,0.5965,—,—,—,39.76,—,1
+---,---,---,---,---,---,---,---,---,---,---
+"LAURA (Ensemble, seed 42)",This work,0.5321,"[0.4915, 0.5744]",0.4436,"[0.4064, 0.4821]",—,—,31.38,6.4,1
+U-Net (seed 42),This work,0.6581,"[0.6136, 0.7015]",0.5990,"[0.5561, 0.6416]",—,—,31.38,6.4,1
+Attention U-Net (seed 42),This work,0.6468,"[0.6022, 0.6921]",0.5920,"[0.5480, 0.6361]",—,—,31.91,5.7,1
+DeepLabV3+ (seed 42),This work,not run,—,—,—,—,—,—,—,—
+U-Net++ (seed 42),This work,not run,—,—,—,—,—,—,—,—

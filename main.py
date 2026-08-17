@@ -507,7 +507,6 @@ def main():
             preds = np.argmax(probs, axis=1)
             metrics = compute_classification_metrics(preds, labels, probs, num_classes=config.training.num_classes)
             
-            import pandas as pd
             pred_df = pd.DataFrame({
                 "image_path": paths,
                 "true_label": labels,
@@ -581,7 +580,6 @@ def main():
                 probs, labels, paths = compute_tta_predictions(tta_model, test_dataset_with_paths, device)
                 preds = np.argmax(probs, axis=1)
 
-                import pandas as pd
                 pred_df = pd.DataFrame({
                     "image_path": paths,
                     "true_label": labels,

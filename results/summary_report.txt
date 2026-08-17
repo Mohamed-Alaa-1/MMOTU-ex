@@ -2,7 +2,7 @@
       MMOTU XAI Pipeline - Summary Report
 ====================================================
 
-Date Generated: 2026-07-08 16:26:43
+Date Generated: 2026-08-17 13:38:35
 Run Name: exp_001
 Device: auto
 
@@ -57,46 +57,6 @@ swin_t:
   Bal Acc:    0.6874
 
 --- 4. XAI Alignment Results (ExBale) ---
-Backbone: densenet121
-                          sc      cc    wcis  exbale
-xai_method                                          
-eigencam              0.2394  0.3068  0.3584  0.2555
-gradcam               0.2247  0.3017  0.3930  0.2422
-gradcam_pp            0.3771  0.3652  0.5825  0.3585
-integrated_gradients  0.0028  0.5504  0.0985  0.0396
-saliency              0.0028  0.5455  0.1128  0.0413
-scorecam              0.4628  0.4223  0.6348  0.4296
-
-Backbone: resnet50
-                          sc      cc    wcis  exbale
-xai_method                                          
-eigencam              0.1349  0.1973  0.3328  0.1568
-gradcam               0.2227  0.4614  0.4225  0.2865
-gradcam_pp            0.1878  0.3876  0.3794  0.2412
-integrated_gradients  0.0025  0.6371  0.0930  0.0397
-saliency              0.0023  0.5779  0.0994  0.0382
-scorecam              0.0754  0.2066  0.2083  0.1094
-
-Backbone: efficientnet_b3
-                          sc      cc    wcis  exbale
-xai_method                                          
-eigencam              0.1070  0.2120  0.2484  0.1390
-gradcam               0.2351  0.4634  0.4474  0.3063
-gradcam_pp            0.1889  0.3412  0.4040  0.2356
-integrated_gradients  0.0023  0.5110  0.0873  0.0344
-saliency              0.0025  0.5062  0.1046  0.0373
-scorecam              0.0483  0.2317  0.1426  0.0859
-
-Backbone: mobilenet_v3_large
-                          sc      cc    wcis  exbale
-xai_method                                          
-eigencam              0.0756  0.2164  0.2192  0.1161
-gradcam               0.2149  0.5088  0.4326  0.3007
-gradcam_pp            0.1676  0.2476  0.3802  0.1917
-integrated_gradients  0.0034  0.6012  0.0992  0.0448
-saliency              0.0033  0.6284  0.1025  0.0461
-scorecam              0.0563  0.1102  0.2071  0.0735
-
 Backbone: swin_t
                           sc      cc    wcis  exbale
 xai_method                                          

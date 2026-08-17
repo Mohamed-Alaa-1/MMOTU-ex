@@ -1,14 +1,52 @@
 {
     "models_used": [
-        "laura_small_best.pt",
-        "laura_base_model2_best.pt"
+        "unet_run_best.pt"
     ],
-    "estimator": "DeepEnsemble",
+    "estimator": "MCDropout",
     "test_images": 294,
+    "model_params": {
+        "model_0": {
+            "total_params_M": 31.384,
+            "trainable_params_M": 31.384
+        }
+    },
+    "inference_fps": 6.43,
     "conformal_target_alpha_fnr": 0.1,
-    "conformal_calibrated_lambda": 0.0,
-    "test_mean_standard_dice": 0.6404628713347323,
-    "test_mean_conformal_dice": 0.1774726214021787,
-    "test_mean_conformal_fnr": 0.0,
-    "test_aurc": 0.31289031722283056
+    "conformal_alpha_corrected": 0.09957627118644069,
+    "conformal_calibrated_lambda": 0.35000000000000003,
+    "formal_guarantee_valid": true,
+    "crc_note": "Formal CRC guarantee (Angelopoulos & Bates 2022).",
+    "val_fnr_at_05": 0.2103228836060071,
+    "test_mean_standard_dice": 0.5320748012772141,
+    "test_mean_standard_dice_ci": [
+        0.49149661060110544,
+        0.574446933715029
+    ],
+    "test_mean_standard_iou": 0.4435752037380701,
+    "test_mean_standard_iou_ci": [
+        0.4064415943877914,
+        0.48208390246883903
+    ],
+    "test_mean_standard_fnr": 0.23091337278730115,
+    "test_mean_standard_fnr_ci": [
+        0.2005225019565609,
+        0.2626860427004401
+    ],
+    "val_fnr_at_crc": 0.09319855703219303,
+    "test_mean_conformal_dice": 0.4754442674885828,
+    "test_mean_conformal_dice_ci": [
+        0.43755805438201434,
+        0.5149475497511862
+    ],
+    "test_mean_conformal_iou": 0.37950662333317425,
+    "test_mean_conformal_iou_ci": [
+        0.34620001361135466,
+        0.4149728343543313
+    ],
+    "test_mean_conformal_fnr": 0.09979450565211624,
+    "test_mean_conformal_fnr_ci": [
+        0.08091174479169247,
+        0.12009335651989554
+    ],
+    "test_aurc": 0.30189166637553094
 }

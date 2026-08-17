@@ -1,0 +1,2 @@
+epoch,train_loss,val_loss,val_dice,val_iou,lr,skipped_batches_train,skipped_batches_val,elapsed_s
+1,0.61924,0.546387,0.495477,0.401855,1.00e-05,0,0,91.0

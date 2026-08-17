@@ -1,9 +1,5 @@
 {
   "figures": [
-    "results/figures/qualitative_comparisons/qualitative_comparison1_densenet121.pdf",
-    "results/figures/qualitative_comparisons/qualitative_comparison2_resnet50.pdf",
-    "results/figures/qualitative_comparisons/qualitative_comparison3_efficientnet_b3.pdf",
-    "results/figures/qualitative_comparisons/qualitative_comparison4_mobilenet_v3_large.pdf",
-    "results/figures/qualitative_comparisons/qualitative_comparison5_swin_t.pdf"
+    "results/figures/qualitative_comparisons/qualitative_comparison1_swin_t.pdf"
   ]
 }
