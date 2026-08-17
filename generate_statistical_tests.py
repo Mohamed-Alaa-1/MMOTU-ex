@@ -231,6 +231,41 @@ def main():
         output_content.append(f"  p-value:                {pvalue:.4e}")
         output_content.append(f"  Significant (p<0.05):   {pvalue < 0.05}\n")
 
+        # Explicit interpretation block
+        if pvalue >= 0.05:
+            output_content.append("  " + "!" * 60)
+            output_content.append(
+                f"  INTERPRETATION: The ensemble vs ResNet-50 difference is NOT"
+            )
+            output_content.append(
+                f"  statistically significant at alpha=0.05"
+            )
+            output_content.append(
+                f"  (p={pvalue:.4f}, Yates-corrected McNemar, {b+c} discordant pairs)."
+            )
+            output_content.append("")
+            output_content.append("  PAPER CORRECTION REQUIRED:")
+            output_content.append(
+                "  Revise any claim of 'significant superiority' to:"
+            )
+            output_content.append(
+                f"  'The ensemble (acc={ens_acc:.1f}%) outperforms ResNet-50"
+            )
+            output_content.append(
+                f"  (acc={single_acc:.1f}%) but the gap is not significant at"
+            )
+            output_content.append(
+                "   the 0.05 level (McNemar p=0.082).'"
+            )
+            output_content.append("  " + "!" * 60)
+        else:
+            output_content.append(
+                f"  INTERPRETATION: Statistically significant at alpha=0.05."
+            )
+            output_content.append(
+                f"  The ensemble is significantly better than ResNet-50."
+            )
+
     except Exception as e:
         print(f"Error in Classification Test: {e}")
         output_content.append("=== 2. Classification Ensemble McNemar Test ===")

@@ -260,10 +260,31 @@ def main() -> None:
         print(f"  Chi-squared statistic:  {mcnemar_result['statistic']:.4f}")
         print(f"  p-value:                {mcnemar_result['pvalue']:.4e}")
         print(f"  Significant (p<0.05):   {mcnemar_result['significant_0.05']}")
+
+        # Explicit interpretation — critical for paper accuracy
+        if not mcnemar_result["significant_0.05"]:
+            print()
+            print("  " + "!" * 60)
+            print(f"  INTERPRETATION: The difference between {args.model_a}")
+            print(f"  and {args.model_b} is NOT statistically significant")
+            print(f"  at alpha=0.05 (p={mcnemar_result['pvalue']:.4f}, Yates-corrected McNemar).")
+            print()
+            print("  PAPER CORRECTION REQUIRED:")
+            print("  Any sentence in the abstract, results, or conclusion")
+            print("  claiming the ensemble is 'significantly better' than")
+            print(f"  {args.model_b} must be revised to:")
+            print("  'performs better but the difference does not reach")
+            print("  statistical significance at the 0.05 level'.")
+            print("  " + "!" * 60)
+        else:
+            print()
+            print(f"  INTERPRETATION: Statistically significant at alpha=0.05.")
+            print(f"  The ensemble is significantly better than {args.model_b}.")
     else:
         missing = [m for m in [args.model_a, args.model_b]
                    if m not in model_results]
         print(f"[WARNING] Model(s) not found: {missing}. Skipping McNemar.")
+
 
     # -----------------------------------------------------------------------
     # 4. Contradiction check: look for known discrepancies

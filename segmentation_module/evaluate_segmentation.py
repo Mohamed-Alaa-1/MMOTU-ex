@@ -71,28 +71,58 @@ def parse_args():
         "--mc_samples", type=int, default=10,
         help="Number of MC-Dropout forward passes (only used if passing 1 checkpoint).",
     )
+    p.add_argument(
+        "--model_type", default="laura",
+        choices=["laura", "unet", "attention_unet", "deeplabv3plus", "unetplusplus"],
+        help="Architecture type of the checkpoint(s). Required when loading non-LAURA baselines.",
+    )
     return p.parse_args()
 
 
-def load_models(checkpoint_paths: List[str], device: torch.device) -> List[torch.nn.Module]:
-    """Loads one or more models, reconstructing their architecture from the saved config."""
+def load_models(checkpoint_paths: List[str], device: torch.device,
+                model_type: str = "laura") -> List[torch.nn.Module]:
+    """Load one or more models from checkpoint files.
+
+    Args:
+        checkpoint_paths: List of .pt checkpoint file paths.
+        device:           Target device (CPU or CUDA).
+        model_type:       'laura' (default) reconstructs from ckpt['config'].
+                          Any other value uses get_baseline_model(model_type).
+                          This is needed because baseline checkpoints may not
+                          store a 'config' key.
+    """
+    from segmentation.models.baselines import get_baseline_model
     models = []
     for path in checkpoint_paths:
         ckpt_path = Path(path)
         if not ckpt_path.is_absolute():
             ckpt_path = _PROJECT_ROOT / ckpt_path
-            
-        print(f"Loading checkpoint: {ckpt_path.name}")
+
+        print(f"Loading checkpoint: {ckpt_path.name}  (model_type={model_type})")
         ckpt = torch.load(ckpt_path, map_location=device)
-        
-        # Reconstruct config
-        config = ckpt["config"]
-        model = LightweightAuraViT(config).to(device)
-        model.load_state_dict(ckpt["model_state_dict"], strict=True)
+
+        if model_type == "laura":
+            # LAURA: architecture is reconstructed from the saved config
+            config = ckpt["config"]
+            model = LightweightAuraViT(config).to(device)
+            arch_label = config.__class__.__name__
+        else:
+            # Baseline: instantiate by name; state dict keys must match
+            model = get_baseline_model(model_type, in_channels=1, num_classes=1).to(device)
+            arch_label = model_type.upper()
+
+        state_key = "model_state_dict" if "model_state_dict" in ckpt else "state_dict"
+        missing, unexpected = model.load_state_dict(ckpt[state_key], strict=False)
+        if missing:
+            print(f"  [WARNING] Missing keys in checkpoint ({len(missing)}): {missing[:5]}{'...' if len(missing)>5 else ''}")
+        if unexpected:
+            print(f"  [WARNING] Unexpected keys in checkpoint ({len(unexpected)}): {unexpected[:5]}{'...' if len(unexpected)>5 else ''}")
+
         model.eval()
         models.append(model)
-        print(f"  -> Reconstructed as {config.__class__.__name__} (params: {sum(p.numel() for p in model.parameters())/1e6:.2f}M)")
-        
+        n_params = sum(p.numel() for p in model.parameters())
+        print(f"  -> {arch_label}  ({n_params/1e6:.2f}M params)")
+
     return models
 
 
@@ -152,7 +182,7 @@ def main():
 
     # 2. Load Estimator
     print("\nInitializing Uncertainty Estimator...")
-    models = load_models(args.checkpoints, device)
+    models = load_models(args.checkpoints, device, model_type=args.model_type)
     
     if len(models) == 1:
         print(f"Single model detected. Using MCDropoutSegmentationEstimator (samples={args.mc_samples}).")

@@ -506,11 +506,37 @@ def main():
 
         print(f"\n  Model A (Inpainted) — caliper-only Dice: {dice_a_cal.mean():.4f}  IoU: {iou_a_cal.mean():.4f}")
         print(f"  Model B (Shortcut)  — caliper-only Dice: {dice_b_cal.mean():.4f}  IoU: {iou_b_cal.mean():.4f}")
-        print(
-            "\n  Interpretation: if both Dice scores are ~0, calipers provide"
-            "\n  no direct segmentation signal. If Model B Dice > Model A Dice,"
-            "\n  Model B has learned to exploit the caliper-boundary correlation."
-        )
+
+        # Quantitative threshold-based interpretation
+        def _interpret_caliper_dice(dice_val: float, model_name: str) -> str:
+            if dice_val < 0.10:
+                return (f"  {model_name}: Dice={dice_val:.4f} (<0.10) — calipers provide NO"
+                        f" meaningful segmentation signal.")
+            elif dice_val < 0.40:
+                return (f"  {model_name}: Dice={dice_val:.4f} (0.10-0.40) — LOW but non-zero."
+                        f"\n    Likely reflects boundary-proximity artifact: calipers are"
+                        f"\n    typically placed at the tumour boundary, so the model sees"
+                        f"\n    caliper-region texture that partially correlates with the mask edge."
+                        f"\n    This is NOT evidence of strong shortcut learning.")
+            else:
+                return (f"  {model_name}: Dice={dice_val:.4f} (>0.40) — HIGH caliper-only Dice."
+                        f"\n    Strong evidence the model has learned to exploit the caliper"
+                        f"\n    boundary as a shortcut for segmentation.")
+
+        print()
+        print(_interpret_caliper_dice(dice_a_cal.mean(), "Model A (Inpainted)"))
+        print(_interpret_caliper_dice(dice_b_cal.mean(), "Model B (Shortcut)"))
+
+        diff = dice_b_cal.mean() - dice_a_cal.mean()
+        print(f"\n  Shortcut exploitation gap (B - A): {diff:+.4f}")
+        if diff > 0.05:
+            print("  Model B shows higher caliper-only Dice — evidence of greater")
+            print("  caliper shortcut reliance compared to the inpainted Model A.")
+        else:
+            print("  Models show similar caliper-only Dice — the inpainting does not")
+            print("  eliminate boundary-proximity effects but both models rely equally")
+            print("  (or minimally) on calipers for direct segmentation.")
+
 
         # Append to CSV
         caliper_rows = [

@@ -392,6 +392,17 @@ def evaluate_conformal_sets(
 ) -> dict:
     """Compute marginal and per-class coverage with 95% bootstrap CIs.
 
+    IMPORTANT — Calibration-set vs. test-set coverage
+    --------------------------------------------------
+    When called with the **calibration** data (same data used in `calibrate()`),
+    APS/RAPS construction guarantees coverage >= (1 - alpha) by design. This
+    means marginal_coverage will often be exactly 1.0 on calibration data,
+    and marginal_coverage_ci = (1.0, 1.0). This is mathematically expected and
+    correct — it is NOT evidence of perfect generalisation.
+
+    For a valid, unbiased estimate of test-set coverage, always call this
+    function with **held-out test** predictions (data NOT used in calibrate()).
+
     Args:
         pred_sets:   List of N prediction sets (each a list of class indices).
         labels:      [N] true class indices.
@@ -406,6 +417,7 @@ def evaluate_conformal_sets(
           singleton_rate              float
           per_class_coverage          {class: float}
           per_class_coverage_ci       {class: (lo, hi)}
+          on_calibration_data_warning str or None
     """
     labels = np.asarray(labels)
     covered = np.array([labels[i] in pred_sets[i] for i in range(len(labels))],
@@ -415,6 +427,17 @@ def evaluate_conformal_sets(
     marginal_ci       = _bootstrap_ci(covered, n_boot=n_boot)
     avg_set_size      = float(np.mean([len(s) for s in pred_sets])) if pred_sets else 0.0
     singleton_rate    = float(np.mean([len(s) == 1 for s in pred_sets])) if pred_sets else 0.0
+
+    # Warn when coverage = 1.0 — likely called on calibration data
+    calibration_warning: str | None = None
+    if marginal_coverage >= 1.0:
+        calibration_warning = (
+            "marginal_coverage=1.0: This is expected when called on the "
+            "calibration set (APS guarantees >=1-alpha coverage by construction). "
+            "Call evaluate_conformal_sets() on held-out TEST data for an unbiased "
+            "coverage estimate."
+        )
+        logger.warning(calibration_warning)
 
     per_class_coverage = {}
     per_class_coverage_ci = {}
@@ -433,10 +456,11 @@ def evaluate_conformal_sets(
         )
 
     return {
-        "marginal_coverage":      marginal_coverage,
-        "marginal_coverage_ci":   marginal_ci,
-        "avg_set_size":           avg_set_size,
-        "singleton_rate":         singleton_rate,
-        "per_class_coverage":     per_class_coverage,
-        "per_class_coverage_ci":  per_class_coverage_ci,
+        "marginal_coverage":           marginal_coverage,
+        "marginal_coverage_ci":        marginal_ci,
+        "avg_set_size":                avg_set_size,
+        "singleton_rate":              singleton_rate,
+        "per_class_coverage":          per_class_coverage,
+        "per_class_coverage_ci":       per_class_coverage_ci,
+        "on_calibration_data_warning": calibration_warning,
     }
