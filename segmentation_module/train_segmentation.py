@@ -50,6 +50,7 @@ if str(_HERE) not in sys.path:
 
 from segmentation.models.auravit_config import LAURA_BASE, LAURA_SMALL, LAURA_TINY
 from segmentation.models.lightweight_auravit import LightweightAuraViT
+from segmentation.models.baselines import get_baseline_model
 from segmentation.dataset import get_segmentation_dataloaders
 from segmentation.trainer import SegmentationTrainer, setup_segmentation_logger
 
@@ -84,7 +85,16 @@ def parse_args() -> argparse.Namespace:
     p.add_argument(
         "--architecture", default="small",
         choices=["base", "small", "tiny"],
-        help="LAURA variant to train.",
+        help="LAURA variant to train (only used when model_type=laura).",
+    )
+    p.add_argument(
+        "--model_type", default="laura",
+        choices=["laura", "unet", "attention_unet", "deeplabv3plus", "unetplusplus"],
+        help=(
+            "Model architecture to train. 'laura' selects the LightweightAuraViT "
+            "specified by --architecture. Other choices select the corresponding "
+            "baseline from segmentation.models.baselines."
+        ),
     )
     p.add_argument(
         "--resume", default=None,
@@ -184,17 +194,23 @@ def main() -> None:
     # Model
     # -----------------------------------------------------------------------
     arch_map = {
-        "base": LAURA_BASE,
+        "base":  LAURA_BASE,
         "small": LAURA_SMALL,
-        "tiny": LAURA_TINY,
+        "tiny":  LAURA_TINY,
     }
-    model_cfg = arch_map[args.architecture]
-    
-    model = LightweightAuraViT(model_cfg)
+
+    if args.model_type == "laura":
+        model_cfg = arch_map[args.architecture]
+        model     = LightweightAuraViT(model_cfg)
+        model_label = f"LAURA_{args.architecture.upper()}"
+    else:
+        model     = get_baseline_model(args.model_type, in_channels=1, num_classes=1)
+        model_label = args.model_type.upper()
+
     n_params_total = sum(p.numel() for p in model.parameters())
     n_params_train = sum(p.numel() for p in model.parameters() if p.requires_grad)
     logger.info(
-        f"Model         : LAURA_{args.architecture.upper()}  "
+        f"Model         : {model_label}  "
         f"total={n_params_total/1e6:.2f}M  trainable={n_params_train/1e6:.2f}M"
     )
 

@@ -22,6 +22,7 @@ The script will:
 import argparse
 import json
 import sys
+import time
 from pathlib import Path
 from typing import List
 
@@ -44,7 +45,8 @@ from segmentation_uncertainty.mc_dropout_segmentation import MCDropoutSegmentati
 from segmentation_uncertainty.ensemble_segmentation import DeepEnsembleSegmentationEstimator
 from segmentation_uncertainty.conformal_risk_control import SegmentationConformalRiskController
 from segmentation_uncertainty.selective_segmentation import selective_segmentation_risk_coverage, image_level_uncertainty
-from segmentation.metrics import dice_score
+from segmentation.metrics import dice_score, iou_score
+from segmentation.models.baselines import count_parameters
 
 
 def parse_args():
@@ -69,28 +71,58 @@ def parse_args():
         "--mc_samples", type=int, default=10,
         help="Number of MC-Dropout forward passes (only used if passing 1 checkpoint).",
     )
+    p.add_argument(
+        "--model_type", default="laura",
+        choices=["laura", "unet", "attention_unet", "deeplabv3plus", "unetplusplus"],
+        help="Architecture type of the checkpoint(s). Required when loading non-LAURA baselines.",
+    )
     return p.parse_args()
 
 
-def load_models(checkpoint_paths: List[str], device: torch.device) -> List[torch.nn.Module]:
-    """Loads one or more models, reconstructing their architecture from the saved config."""
+def load_models(checkpoint_paths: List[str], device: torch.device,
+                model_type: str = "laura") -> List[torch.nn.Module]:
+    """Load one or more models from checkpoint files.
+
+    Args:
+        checkpoint_paths: List of .pt checkpoint file paths.
+        device:           Target device (CPU or CUDA).
+        model_type:       'laura' (default) reconstructs from ckpt['config'].
+                          Any other value uses get_baseline_model(model_type).
+                          This is needed because baseline checkpoints may not
+                          store a 'config' key.
+    """
+    from segmentation.models.baselines import get_baseline_model
     models = []
     for path in checkpoint_paths:
         ckpt_path = Path(path)
         if not ckpt_path.is_absolute():
             ckpt_path = _PROJECT_ROOT / ckpt_path
-            
-        print(f"Loading checkpoint: {ckpt_path.name}")
+
+        print(f"Loading checkpoint: {ckpt_path.name}  (model_type={model_type})")
         ckpt = torch.load(ckpt_path, map_location=device)
-        
-        # Reconstruct config
-        config = ckpt["config"]
-        model = LightweightAuraViT(config).to(device)
-        model.load_state_dict(ckpt["model_state_dict"], strict=True)
+
+        if model_type == "laura":
+            # LAURA: architecture is reconstructed from the saved config
+            config = ckpt["config"]
+            model = LightweightAuraViT(config).to(device)
+            arch_label = config.__class__.__name__
+        else:
+            # Baseline: instantiate by name; state dict keys must match
+            model = get_baseline_model(model_type, in_channels=1, num_classes=1).to(device)
+            arch_label = model_type.upper()
+
+        state_key = "model_state_dict" if "model_state_dict" in ckpt else "state_dict"
+        missing, unexpected = model.load_state_dict(ckpt[state_key], strict=False)
+        if missing:
+            print(f"  [WARNING] Missing keys in checkpoint ({len(missing)}): {missing[:5]}{'...' if len(missing)>5 else ''}")
+        if unexpected:
+            print(f"  [WARNING] Unexpected keys in checkpoint ({len(unexpected)}): {unexpected[:5]}{'...' if len(unexpected)>5 else ''}")
+
         model.eval()
         models.append(model)
-        print(f"  -> Reconstructed as {config.__class__.__name__} (params: {sum(p.numel() for p in model.parameters())/1e6:.2f}M)")
-        
+        n_params = sum(p.numel() for p in model.parameters())
+        print(f"  -> {arch_label}  ({n_params/1e6:.2f}M params)")
+
     return models
 
 
@@ -108,6 +140,23 @@ def collect_dataset_tensors(df: pd.DataFrame, device: torch.device):
         all_masks.append(masks)
         
     return torch.cat(all_images, dim=0).to(device), torch.cat(all_masks, dim=0).to(device)
+
+
+def bootstrap_metric_ci(
+    values: np.ndarray,
+    n_boot: int = 5000,
+    ci: float = 0.95,
+) -> tuple:
+    """Bootstrap confidence interval for the mean of `values`."""
+    rng = np.random.default_rng(seed=42)
+    values = np.asarray(values, dtype=float)
+    boot_means = np.array([
+        rng.choice(values, size=len(values), replace=True).mean()
+        for _ in range(n_boot)
+    ])
+    lo = float(np.percentile(boot_means, 100 * (1 - ci) / 2))
+    hi = float(np.percentile(boot_means, 100 * (1 - (1 - ci) / 2)))
+    return lo, hi
 
 
 def main():
@@ -133,11 +182,11 @@ def main():
 
     # 2. Load Estimator
     print("\nInitializing Uncertainty Estimator...")
-    models = load_models(args.checkpoints, device)
+    models = load_models(args.checkpoints, device, model_type=args.model_type)
     
     if len(models) == 1:
         print(f"Single model detected. Using MCDropoutSegmentationEstimator (samples={args.mc_samples}).")
-        estimator = MCDropoutSegmentationEstimator(models[0], num_samples=args.mc_samples)
+        estimator = MCDropoutSegmentationEstimator(models[0], device=device, n_samples=args.mc_samples)
     else:
         print(f"Multiple models ({len(models)}) detected. Using DeepEnsembleSegmentationEstimator.")
         # Support heterogeneous ensembles (e.g. LAURA_BASE + LAURA_SMALL)
@@ -146,7 +195,7 @@ def main():
     # 3. Conformal Risk Control
     print(f"\nCalibrating Conformal Risk Control (Target FNR <= {args.alpha*100}%)...")
     crc = SegmentationConformalRiskController(alpha=args.alpha)
-    
+
     print("  -> Generating probability maps for calibration set...")
     val_est = []
     chunk_size = 16
@@ -155,61 +204,113 @@ def main():
         res = estimator.predict(chunk)
         val_est.append(res["mean_probs"])
     val_prob_maps = np.concatenate(val_est, axis=0)
-    
+
     crc.calibrate(val_prob_maps, val_masks.cpu().numpy())
+    crc_summary = crc.summary()
     calib_lambda = crc.lambda_star
-    print(f"  -> Calibrated Threshold (λ_hat): {calib_lambda:.4f}")
+
+    print(f"  -> CRC Calibrated Threshold (λ*): {calib_lambda:.4f}")
+    print(f"  -> Standard Threshold:            {crc.lambda_star_standard:.4f}")
+    print(f"  -> alpha_corrected (finite-sample): {crc_summary['alpha_corrected']:.6f}")
+    print(f"  -> Val FNR @ λ*=0.50 (standard):  {crc_summary['calibration_fnr_at_05_threshold']:.4f}")
+    print(f"  -> Val FNR @ λ*={calib_lambda:.2f} (CRC):      {crc_summary['calibration_fnr_at_crc_threshold']:.4f}")
+    print(f"  -> Formal CRC guarantee valid:    {crc_summary['formal_guarantee_valid']}")
+    print(f"  -> Note: {crc_summary['note']}")
     
     # 4. Standard vs Conformal Evaluation on Test Set
     print("\nEvaluating on Test Set...")
-    standard_dices = []
+    # Per-image metric arrays
+    standard_dices  = []
     conformal_dices = []
-    conformal_fnrs = []
-    
-    test_prob_maps_list = []
+    standard_ious   = []
+    conformal_ious  = []
+    standard_fnrs   = []
+    conformal_fnrs  = []
+    standard_precs  = []
+    conformal_precs = []
+
+    test_prob_maps_list   = []
     test_uncertainty_list = []
-    
-    # Process test set in chunks to avoid OOM if test set is large
+
+    # --- Inference timing ---
+    timing_start = time.time()
+    n_test_images = len(test_images)
+
     chunk_size = 16
     for i in tqdm(range(0, len(test_images), chunk_size), desc="Test Inference"):
-        img_chunk = test_images[i:i+chunk_size]
+        img_chunk  = test_images[i:i+chunk_size]
         mask_chunk = test_masks[i:i+chunk_size].cpu().numpy()
-        
-        # Get raw estimates
-        raw_est = estimator.predict(img_chunk)
+
+        raw_est   = estimator.predict(img_chunk)
         prob_maps = raw_est["mean_probs"]
-        
-        # Collect for Selective Segmentation later
+
         test_prob_maps_list.append(prob_maps)
         test_uncertainty_list.append(image_level_uncertainty(raw_est))
-        
-        # Conformal predictions (calibrated)
-        conf_preds = crc.predict(prob_maps)
-        
-        # Standard predictions (0.5 threshold on mean probs)
-        std_preds = prob_maps >= 0.5
-        
+
+        conf_preds = crc.predict(prob_maps)           # CRC threshold
+        std_preds  = (prob_maps >= 0.5).astype(np.uint8)  # standard 0.5
+
         for j in range(len(img_chunk)):
             gt = mask_chunk[j, 0] >= 0.5
-            
-            # Dice
-            standard_dices.append(dice_score(std_preds[j, 0], gt))
-            conformal_dices.append(dice_score(conf_preds[j, 0], gt))
-            
-            # FNR (False Negatives / Actual Positives)
-            actual_pos = gt.sum()
-            if actual_pos > 0:
-                false_neg = (gt & ~conf_preds[j, 0]).sum()
-                conformal_fnrs.append(false_neg / actual_pos)
 
-    mean_std_dice = np.mean(standard_dices)
-    mean_conf_dice = np.mean(conformal_dices)
-    mean_conf_fnr = np.mean(conformal_fnrs)
-    
+            # Dice and IoU
+            standard_dices.append(dice_score(std_preds[j, 0],   gt))
+            conformal_dices.append(dice_score(conf_preds[j, 0], gt))
+            standard_ious.append(iou_score(std_preds[j, 0],   gt))
+            conformal_ious.append(iou_score(conf_preds[j, 0], gt))
+
+            actual_pos = int(gt.sum())
+            if actual_pos > 0:
+                # FNR = missed positives / actual positives
+                std_fn  = int((gt & ~std_preds[j, 0].astype(bool)).sum())
+                conf_fn = int((gt & ~conf_preds[j, 0].astype(bool)).sum())
+                standard_fnrs.append(std_fn  / actual_pos)
+                conformal_fnrs.append(conf_fn / actual_pos)
+
+                # Precision = true positives / predicted positives
+                std_pred_pos  = int(std_preds[j, 0].sum())
+                conf_pred_pos = int(conf_preds[j, 0].sum())
+                std_tp  = int((std_preds[j, 0].astype(bool)  & gt).sum())
+                conf_tp = int((conf_preds[j, 0].astype(bool) & gt).sum())
+                standard_precs.append(std_tp  / max(std_pred_pos,  1))
+                conformal_precs.append(conf_tp / max(conf_pred_pos, 1))
+
+    inference_time_s = time.time() - timing_start
+    fps = n_test_images / inference_time_s
+
+    # --- Aggregated results with bootstrap CIs ---
+    standard_dices  = np.array(standard_dices)
+    conformal_dices = np.array(conformal_dices)
+    standard_ious   = np.array(standard_ious)
+    conformal_ious  = np.array(conformal_ious)
+    standard_fnrs   = np.array(standard_fnrs)
+    conformal_fnrs  = np.array(conformal_fnrs)
+    standard_precs  = np.array(standard_precs)
+    conformal_precs = np.array(conformal_precs)
+
+    mean_std_dice  = float(standard_dices.mean())
+    mean_conf_dice = float(conformal_dices.mean())
+    mean_conf_fnr  = float(conformal_fnrs.mean()) if len(conformal_fnrs) > 0 else float('nan')
+    mean_std_fnr   = float(standard_fnrs.mean())  if len(standard_fnrs)  > 0 else float('nan')
+
+    ci_std_dice  = bootstrap_metric_ci(standard_dices)
+    ci_conf_dice = bootstrap_metric_ci(conformal_dices)
+    ci_std_iou   = bootstrap_metric_ci(standard_ious)
+    ci_conf_iou  = bootstrap_metric_ci(conformal_ious)
+    ci_std_fnr   = bootstrap_metric_ci(standard_fnrs)  if len(standard_fnrs)  > 0 else (float('nan'), float('nan'))
+    ci_conf_fnr  = bootstrap_metric_ci(conformal_fnrs) if len(conformal_fnrs) > 0 else (float('nan'), float('nan'))
+
     print(f"\nTest Set Results:")
-    print(f"  Standard Dice (thresh=0.5): {mean_std_dice:.4f}")
-    print(f"  Conformal Dice (thresh={calib_lambda:.4f}): {mean_conf_dice:.4f}")
-    print(f"  Conformal FNR: {mean_conf_fnr:.4f} (Target: <= {args.alpha})")
+    print(f"  [Standard threshold = 0.5]")
+    print(f"    Dice    : {mean_std_dice:.4f}  95% CI [{ci_std_dice[0]:.4f}, {ci_std_dice[1]:.4f}]")
+    print(f"    IoU     : {standard_ious.mean():.4f}  95% CI [{ci_std_iou[0]:.4f}, {ci_std_iou[1]:.4f}]")
+    print(f"    FNR     : {mean_std_fnr:.4f}  95% CI [{ci_std_fnr[0]:.4f}, {ci_std_fnr[1]:.4f}]")
+    print(f"  [CRC threshold = {calib_lambda:.4f}  (target FNR <= {args.alpha})]")
+    print(f"    Dice    : {mean_conf_dice:.4f}  95% CI [{ci_conf_dice[0]:.4f}, {ci_conf_dice[1]:.4f}]")
+    print(f"    IoU     : {conformal_ious.mean():.4f}  95% CI [{ci_conf_iou[0]:.4f}, {ci_conf_iou[1]:.4f}]")
+    print(f"    FNR     : {mean_conf_fnr:.4f}  95% CI [{ci_conf_fnr[0]:.4f}, {ci_conf_fnr[1]:.4f}]")
+    print(f"  Inference FPS: {fps:.1f}  ({inference_time_s:.1f}s for {n_test_images} images)")
+    print(f"  Formal CRC guarantee valid (n>={30}): {crc_summary['formal_guarantee_valid']}")
 
     # 5. Selective Segmentation (AURC)
     print("\nCalculating Risk-Coverage (AURC)...")
@@ -232,17 +333,45 @@ def main():
     aurc_df = pd.DataFrame({"coverage": coverages, "risk_1_minus_dice": risks})
     aurc_df.to_csv(out_dir / "selective_risk_coverage.csv", index=False)
     
+    # Model parameter count
+    param_info = {}
+    for i, m in enumerate(models):
+        total    = sum(p.numel() for p in m.parameters())
+        trainable = sum(p.numel() for p in m.parameters() if p.requires_grad)
+        param_info[f"model_{i}"] = {
+            "total_params_M": round(total / 1e6, 3),
+            "trainable_params_M": round(trainable / 1e6, 3),
+        }
+
     # Save Report
     report = {
         "models_used": [Path(p).name for p in args.checkpoints],
         "estimator": "DeepEnsemble" if len(models) > 1 else "MCDropout",
         "test_images": len(test_images),
+        "model_params": param_info,
+        "inference_fps": round(fps, 2),
         "conformal_target_alpha_fnr": args.alpha,
+        "conformal_alpha_corrected": crc_summary["alpha_corrected"],
         "conformal_calibrated_lambda": calib_lambda,
+        "formal_guarantee_valid": crc_summary["formal_guarantee_valid"],
+        "crc_note": crc_summary["note"],
+        # Standard threshold (0.5) metrics
+        "val_fnr_at_05": crc_summary["calibration_fnr_at_05_threshold"],
         "test_mean_standard_dice": float(mean_std_dice),
+        "test_mean_standard_dice_ci": list(ci_std_dice),
+        "test_mean_standard_iou": float(standard_ious.mean()),
+        "test_mean_standard_iou_ci": list(ci_std_iou),
+        "test_mean_standard_fnr": float(mean_std_fnr),
+        "test_mean_standard_fnr_ci": list(ci_std_fnr),
+        # CRC threshold metrics
+        "val_fnr_at_crc": crc_summary["calibration_fnr_at_crc_threshold"],
         "test_mean_conformal_dice": float(mean_conf_dice),
+        "test_mean_conformal_dice_ci": list(ci_conf_dice),
+        "test_mean_conformal_iou": float(conformal_ious.mean()),
+        "test_mean_conformal_iou_ci": list(ci_conf_iou),
         "test_mean_conformal_fnr": float(mean_conf_fnr),
-        "test_aurc": float(aurc_value)
+        "test_mean_conformal_fnr_ci": list(ci_conf_fnr),
+        "test_aurc": float(aurc_value),
     }
     
     with open(out_dir / "evaluation_report.json", "w") as f:

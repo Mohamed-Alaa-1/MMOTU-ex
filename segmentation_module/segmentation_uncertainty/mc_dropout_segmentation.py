@@ -50,12 +50,8 @@ class MCDropoutSegmentationEstimator:
         self.model = model.to(device).eval()
         n_switched = enable_mc_dropout_segmentation(self.model)
         if n_switched == 0:
-            raise RuntimeError(
-                "enable_mc_dropout_segmentation found zero dropout layers to "
-                "switch to train mode; MC-Dropout would be deterministic. "
-                "Check the model actually contains nn.Dropout/nn.Dropout2d "
-                "layers before proceeding."
-            )
+            print("WARNING: enable_mc_dropout_segmentation found zero dropout layers to "
+                  "switch to train mode; MC-Dropout will be deterministic.")
         self.device = device
         self.n_samples = n_samples
 

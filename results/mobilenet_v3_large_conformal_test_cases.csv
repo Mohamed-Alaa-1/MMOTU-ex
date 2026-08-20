@@ -3,4 +3,4 @@ data/raw/OTU_2d/images/590.JPG,4,Clear cell carcinoma,4,Clear cell carcinoma,0.9
 data/raw/OTU_2d/images/500.JPG,4,Clear cell carcinoma,4,Clear cell carcinoma,0.9997566342353821,[4],['Clear cell carcinoma'],1,True,True,True,confident_singleton
 data/raw/OTU_2d/images/957.JPG,5,Dermoid cyst,4,Clear cell carcinoma,0.4851531684398651,"[0, 2, 3, 4, 5, 6, 7]","['Chocolate cyst', 'Teratoma', 'Theca cell tumour', 'Clear cell carcinoma', 'Dermoid cyst', 'Simple cyst', 'Normal ovary']",7,False,True,False,ambiguous_large_set
 data/raw/OTU_2d/images/47.JPG,2,Teratoma,0,Chocolate cyst,0.5812739729881287,"[0, 1, 2, 3, 4, 6, 7]","['Chocolate cyst', 'Serous cystadenoma', 'Teratoma', 'Theca cell tumour', 'Clear cell carcinoma', 'Simple cyst', 'Normal ovary']",7,False,True,False,ambiguous_large_set
-data/raw/OTU_2d/images/750.JPG,6,Simple cyst,0,Chocolate cyst,0.9802830219268799,"[0, 4]","['Chocolate cyst', 'Clear cell carcinoma']",2,False,False,False,coverage_failure
+data/raw/OTU_2d/images/750.JPG,6,Simple cyst,0,Chocolate cyst,0.9802830219268799,[0],['Chocolate cyst'],1,True,False,False,coverage_failure

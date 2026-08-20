@@ -61,7 +61,7 @@ data/raw/OTU_2d/images/1265.JPG,0,Chocolate cyst,0,Chocolate cyst,0.916631758213
 data/raw/OTU_2d/images/628.JPG,3,Theca cell tumour,1,Serous cystadenoma,0.9164997935295105,"[1, 3, 6]","['Serous cystadenoma', 'Theca cell tumour', 'Simple cyst']",3,False,True,False
 data/raw/OTU_2d/images/533.JPG,2,Teratoma,2,Teratoma,0.8261132836341858,"[2, 3, 4, 5, 6, 7]","['Teratoma', 'Theca cell tumour', 'Clear cell carcinoma', 'Dermoid cyst', 'Simple cyst', 'Normal ovary']",6,False,True,True
 data/raw/OTU_2d/images/765.JPG,2,Teratoma,2,Teratoma,0.5143910646438599,"[0, 1, 2, 3, 4, 7]","['Chocolate cyst', 'Serous cystadenoma', 'Teratoma', 'Theca cell tumour', 'Clear cell carcinoma', 'Normal ovary']",6,False,True,True
-data/raw/OTU_2d/images/1210.JPG,0,Chocolate cyst,0,Chocolate cyst,0.932562530040741,"[0, 3, 4, 7]","['Chocolate cyst', 'Theca cell tumour', 'Clear cell carcinoma', 'Normal ovary']",4,False,True,True
+data/raw/OTU_2d/images/1210.JPG,0,Chocolate cyst,0,Chocolate cyst,0.932562530040741,[0],['Chocolate cyst'],1,True,True,True
 data/raw/OTU_2d/images/1237.JPG,4,Clear cell carcinoma,2,Teratoma,0.6096950769424438,"[1, 2, 4, 6, 7]","['Serous cystadenoma', 'Teratoma', 'Clear cell carcinoma', 'Simple cyst', 'Normal ovary']",5,False,True,False
 data/raw/OTU_2d/images/153.JPG,3,Theca cell tumour,3,Theca cell tumour,0.5632320642471313,"[1, 3, 4, 6]","['Serous cystadenoma', 'Theca cell tumour', 'Clear cell carcinoma', 'Simple cyst']",4,False,True,True
 data/raw/OTU_2d/images/963.JPG,5,Dermoid cyst,5,Dermoid cyst,0.8647390604019165,"[3, 4, 5, 6, 7]","['Theca cell tumour', 'Clear cell carcinoma', 'Dermoid cyst', 'Simple cyst', 'Normal ovary']",5,False,True,True
@@ -102,11 +102,11 @@ data/raw/OTU_2d/images/761.JPG,1,Serous cystadenoma,7,Normal ovary,0.67660039663
 data/raw/OTU_2d/images/795.JPG,6,Simple cyst,2,Teratoma,0.3457114100456238,"[0, 1, 2, 3, 4, 6, 7]","['Chocolate cyst', 'Serous cystadenoma', 'Teratoma', 'Theca cell tumour', 'Clear cell carcinoma', 'Simple cyst', 'Normal ovary']",7,False,True,False
 data/raw/OTU_2d/images/1246.JPG,0,Chocolate cyst,0,Chocolate cyst,0.8490448594093323,"[0, 1, 3, 4, 7]","['Chocolate cyst', 'Serous cystadenoma', 'Theca cell tumour', 'Clear cell carcinoma', 'Normal ovary']",5,False,True,True
 data/raw/OTU_2d/images/1386.JPG,1,Serous cystadenoma,1,Serous cystadenoma,0.8397206664085388,"[0, 1, 4, 6, 7]","['Chocolate cyst', 'Serous cystadenoma', 'Clear cell carcinoma', 'Simple cyst', 'Normal ovary']",5,False,True,True
-data/raw/OTU_2d/images/946.JPG,2,Teratoma,2,Teratoma,0.9267155528068542,"[2, 3, 4, 6, 7]","['Teratoma', 'Theca cell tumour', 'Clear cell carcinoma', 'Simple cyst', 'Normal ovary']",5,False,True,True
+data/raw/OTU_2d/images/946.JPG,2,Teratoma,2,Teratoma,0.9267155528068542,[2],['Teratoma'],1,True,True,True
 data/raw/OTU_2d/images/599.JPG,4,Clear cell carcinoma,5,Dermoid cyst,0.551986575126648,"[3, 4, 5, 7]","['Theca cell tumour', 'Clear cell carcinoma', 'Dermoid cyst', 'Normal ovary']",4,False,True,False
 data/raw/OTU_2d/images/1152.JPG,3,Theca cell tumour,3,Theca cell tumour,0.8327084183692932,"[3, 4]","['Theca cell tumour', 'Clear cell carcinoma']",2,False,True,True
 data/raw/OTU_2d/images/942.JPG,2,Teratoma,2,Teratoma,0.8944327235221863,"[1, 2, 3, 4, 6]","['Serous cystadenoma', 'Teratoma', 'Theca cell tumour', 'Clear cell carcinoma', 'Simple cyst']",5,False,True,True
-data/raw/OTU_2d/images/1395.JPG,2,Teratoma,2,Teratoma,0.9640874862670898,"[2, 3, 4, 6, 7]","['Teratoma', 'Theca cell tumour', 'Clear cell carcinoma', 'Simple cyst', 'Normal ovary']",5,False,True,True
+data/raw/OTU_2d/images/1395.JPG,2,Teratoma,2,Teratoma,0.9640874862670898,[2],['Teratoma'],1,True,True,True
 data/raw/OTU_2d/images/996.JPG,2,Teratoma,5,Dermoid cyst,0.45148688554763794,"[2, 3, 4, 5, 6, 7]","['Teratoma', 'Theca cell tumour', 'Clear cell carcinoma', 'Dermoid cyst', 'Simple cyst', 'Normal ovary']",6,False,True,False
 data/raw/OTU_2d/images/807.JPG,5,Dermoid cyst,5,Dermoid cyst,0.2947600781917572,"[0, 1, 3, 4, 5, 6, 7]","['Chocolate cyst', 'Serous cystadenoma', 'Theca cell tumour', 'Clear cell carcinoma', 'Dermoid cyst', 'Simple cyst', 'Normal ovary']",7,False,True,True
 data/raw/OTU_2d/images/1459.JPG,7,Normal ovary,7,Normal ovary,0.856877326965332,"[1, 3, 4, 7]","['Serous cystadenoma', 'Theca cell tumour', 'Clear cell carcinoma', 'Normal ovary']",4,False,True,True
@@ -127,12 +127,12 @@ data/raw/OTU_2d/images/393.JPG,0,Chocolate cyst,0,Chocolate cyst,0.9122323989868
 data/raw/OTU_2d/images/109.JPG,4,Clear cell carcinoma,5,Dermoid cyst,0.4313404858112335,"[0, 3, 4, 5, 6, 7]","['Chocolate cyst', 'Theca cell tumour', 'Clear cell carcinoma', 'Dermoid cyst', 'Simple cyst', 'Normal ovary']",6,False,True,False
 data/raw/OTU_2d/images/879.JPG,4,Clear cell carcinoma,6,Simple cyst,0.8567111492156982,"[3, 4, 6, 7]","['Theca cell tumour', 'Clear cell carcinoma', 'Simple cyst', 'Normal ovary']",4,False,True,False
 data/raw/OTU_2d/images/1105.JPG,2,Teratoma,2,Teratoma,0.8612142205238342,"[2, 3, 4, 7]","['Teratoma', 'Theca cell tumour', 'Clear cell carcinoma', 'Normal ovary']",4,False,True,True
-data/raw/OTU_2d/images/950.JPG,2,Teratoma,2,Teratoma,0.9653984904289246,"[2, 4]","['Teratoma', 'Clear cell carcinoma']",2,False,True,True
+data/raw/OTU_2d/images/950.JPG,2,Teratoma,2,Teratoma,0.9653984904289246,[2],['Teratoma'],1,True,True,True
 data/raw/OTU_2d/images/1180.JPG,3,Theca cell tumour,3,Theca cell tumour,0.9588514566421509,"[3, 4, 6]","['Theca cell tumour', 'Clear cell carcinoma', 'Simple cyst']",3,False,True,True
 data/raw/OTU_2d/images/799.JPG,0,Chocolate cyst,0,Chocolate cyst,0.8207439184188843,"[0, 1, 3, 4, 6, 7]","['Chocolate cyst', 'Serous cystadenoma', 'Theca cell tumour', 'Clear cell carcinoma', 'Simple cyst', 'Normal ovary']",6,False,True,True
 data/raw/OTU_2d/images/1016.JPG,2,Teratoma,2,Teratoma,0.36486461758613586,"[0, 1, 2, 3, 4, 5, 7]","['Chocolate cyst', 'Serous cystadenoma', 'Teratoma', 'Theca cell tumour', 'Clear cell carcinoma', 'Dermoid cyst', 'Normal ovary']",7,False,True,True
 data/raw/OTU_2d/images/1191.JPG,3,Theca cell tumour,3,Theca cell tumour,0.9521227478981018,"[3, 7]","['Theca cell tumour', 'Normal ovary']",2,False,True,True
-data/raw/OTU_2d/images/1462.JPG,7,Normal ovary,7,Normal ovary,0.9967820644378662,"[3, 4, 7]","['Theca cell tumour', 'Clear cell carcinoma', 'Normal ovary']",3,False,True,True
+data/raw/OTU_2d/images/1462.JPG,7,Normal ovary,7,Normal ovary,0.9967820644378662,[7],['Normal ovary'],1,True,True,True
 data/raw/OTU_2d/images/230.JPG,5,Dermoid cyst,5,Dermoid cyst,0.4807813763618469,"[2, 3, 4, 5, 6, 7]","['Teratoma', 'Theca cell tumour', 'Clear cell carcinoma', 'Dermoid cyst', 'Simple cyst', 'Normal ovary']",6,False,True,True
 data/raw/OTU_2d/images/1226.JPG,2,Teratoma,2,Teratoma,0.3300410211086273,"[1, 2, 6, 7]","['Serous cystadenoma', 'Teratoma', 'Simple cyst', 'Normal ovary']",4,False,True,True
 data/raw/OTU_2d/images/202.JPG,5,Dermoid cyst,5,Dermoid cyst,0.8640047907829285,"[1, 3, 5, 7]","['Serous cystadenoma', 'Theca cell tumour', 'Dermoid cyst', 'Normal ovary']",4,False,True,True
@@ -141,7 +141,7 @@ data/raw/OTU_2d/images/1116.JPG,1,Serous cystadenoma,1,Serous cystadenoma,0.7596
 data/raw/OTU_2d/images/1031.JPG,5,Dermoid cyst,0,Chocolate cyst,0.8404280543327332,"[0, 1, 3, 4, 6, 7]","['Chocolate cyst', 'Serous cystadenoma', 'Theca cell tumour', 'Clear cell carcinoma', 'Simple cyst', 'Normal ovary']",6,False,False,False
 data/raw/OTU_2d/images/1437.JPG,7,Normal ovary,5,Dermoid cyst,0.5724061131477356,"[1, 3, 4, 5, 6, 7]","['Serous cystadenoma', 'Theca cell tumour', 'Clear cell carcinoma', 'Dermoid cyst', 'Simple cyst', 'Normal ovary']",6,False,True,False
 data/raw/OTU_2d/images/222.JPG,5,Dermoid cyst,7,Normal ovary,0.5533829927444458,"[1, 3, 4, 5, 7]","['Serous cystadenoma', 'Theca cell tumour', 'Clear cell carcinoma', 'Dermoid cyst', 'Normal ovary']",5,False,True,False
-data/raw/OTU_2d/images/737.JPG,2,Teratoma,2,Teratoma,0.9327426552772522,"[2, 3, 4]","['Teratoma', 'Theca cell tumour', 'Clear cell carcinoma']",3,False,True,True
+data/raw/OTU_2d/images/737.JPG,2,Teratoma,2,Teratoma,0.9327426552772522,[2],['Teratoma'],1,True,True,True
 data/raw/OTU_2d/images/56.JPG,2,Teratoma,4,Clear cell carcinoma,0.513830840587616,"[1, 2, 3, 4, 5, 6, 7]","['Serous cystadenoma', 'Teratoma', 'Theca cell tumour', 'Clear cell carcinoma', 'Dermoid cyst', 'Simple cyst', 'Normal ovary']",7,False,True,False
 data/raw/OTU_2d/images/1282.JPG,0,Chocolate cyst,0,Chocolate cyst,0.8996859788894653,"[0, 3, 6, 7]","['Chocolate cyst', 'Theca cell tumour', 'Simple cyst', 'Normal ovary']",4,False,True,True
 data/raw/OTU_2d/images/1351.JPG,0,Chocolate cyst,0,Chocolate cyst,0.75614333152771,"[0, 3, 4, 6, 7]","['Chocolate cyst', 'Theca cell tumour', 'Clear cell carcinoma', 'Simple cyst', 'Normal ovary']",5,False,True,True
@@ -180,7 +180,7 @@ data/raw/OTU_2d/images/1309.JPG,0,Chocolate cyst,0,Chocolate cyst,0.257159143686
 data/raw/OTU_2d/images/219.JPG,0,Chocolate cyst,0,Chocolate cyst,0.8638774156570435,"[0, 7]","['Chocolate cyst', 'Normal ovary']",2,False,True,True
 data/raw/OTU_2d/images/1258.JPG,2,Teratoma,5,Dermoid cyst,0.24592211842536926,"[0, 2, 3, 4, 5, 6, 7]","['Chocolate cyst', 'Teratoma', 'Theca cell tumour', 'Clear cell carcinoma', 'Dermoid cyst', 'Simple cyst', 'Normal ovary']",7,False,True,False
 data/raw/OTU_2d/images/1377.JPG,1,Serous cystadenoma,5,Dermoid cyst,0.7124692797660828,"[1, 4, 5, 6, 7]","['Serous cystadenoma', 'Clear cell carcinoma', 'Dermoid cyst', 'Simple cyst', 'Normal ovary']",5,False,True,False
-data/raw/OTU_2d/images/190.JPG,0,Chocolate cyst,0,Chocolate cyst,0.9457321166992188,"[0, 3, 4, 6, 7]","['Chocolate cyst', 'Theca cell tumour', 'Clear cell carcinoma', 'Simple cyst', 'Normal ovary']",5,False,True,True
+data/raw/OTU_2d/images/190.JPG,0,Chocolate cyst,0,Chocolate cyst,0.9457321166992188,[0],['Chocolate cyst'],1,True,True,True
 data/raw/OTU_2d/images/1419.JPG,7,Normal ovary,2,Teratoma,0.30139264464378357,"[0, 1, 2, 4, 5, 6, 7]","['Chocolate cyst', 'Serous cystadenoma', 'Teratoma', 'Clear cell carcinoma', 'Dermoid cyst', 'Simple cyst', 'Normal ovary']",7,False,True,False
 data/raw/OTU_2d/images/1433.JPG,7,Normal ovary,7,Normal ovary,0.998359739780426,[7],['Normal ovary'],1,True,True,True
 data/raw/OTU_2d/images/449.JPG,0,Chocolate cyst,7,Normal ovary,0.2796345353126526,"[0, 1, 2, 4, 5, 6, 7]","['Chocolate cyst', 'Serous cystadenoma', 'Teratoma', 'Clear cell carcinoma', 'Dermoid cyst', 'Simple cyst', 'Normal ovary']",7,False,True,False
@@ -210,7 +210,7 @@ data/raw/OTU_2d/images/151.JPG,3,Theca cell tumour,3,Theca cell tumour,0.7631304
 data/raw/OTU_2d/images/1047.JPG,0,Chocolate cyst,0,Chocolate cyst,0.8572573065757751,"[0, 1, 3, 4, 7]","['Chocolate cyst', 'Serous cystadenoma', 'Theca cell tumour', 'Clear cell carcinoma', 'Normal ovary']",5,False,True,True
 data/raw/OTU_2d/images/704.JPG,5,Dermoid cyst,5,Dermoid cyst,0.932520866394043,"[3, 4, 5, 6, 7]","['Theca cell tumour', 'Clear cell carcinoma', 'Dermoid cyst', 'Simple cyst', 'Normal ovary']",5,False,True,True
 data/raw/OTU_2d/images/58.JPG,1,Serous cystadenoma,1,Serous cystadenoma,0.9672623872756958,[1],['Serous cystadenoma'],1,True,True,True
-data/raw/OTU_2d/images/348.JPG,2,Teratoma,2,Teratoma,0.9262482523918152,"[2, 4, 7]","['Teratoma', 'Clear cell carcinoma', 'Normal ovary']",3,False,True,True
+data/raw/OTU_2d/images/348.JPG,2,Teratoma,2,Teratoma,0.9262482523918152,[2],['Teratoma'],1,True,True,True
 data/raw/OTU_2d/images/588.JPG,5,Dermoid cyst,5,Dermoid cyst,0.7716802954673767,"[0, 4, 5, 7]","['Chocolate cyst', 'Clear cell carcinoma', 'Dermoid cyst', 'Normal ovary']",4,False,True,True
 data/raw/OTU_2d/images/424.JPG,1,Serous cystadenoma,1,Serous cystadenoma,0.5380304455757141,"[1, 3, 4]","['Serous cystadenoma', 'Theca cell tumour', 'Clear cell carcinoma']",3,False,True,True
 data/raw/OTU_2d/images/337.JPG,2,Teratoma,2,Teratoma,0.8874262571334839,"[2, 3, 4, 6, 7]","['Teratoma', 'Theca cell tumour', 'Clear cell carcinoma', 'Simple cyst', 'Normal ovary']",5,False,True,True
@@ -231,7 +231,7 @@ data/raw/OTU_2d/images/39.JPG,0,Chocolate cyst,0,Chocolate cyst,0.92366933822631
 data/raw/OTU_2d/images/512.JPG,2,Teratoma,5,Dermoid cyst,0.39070430397987366,"[1, 2, 3, 4, 5, 6, 7]","['Serous cystadenoma', 'Teratoma', 'Theca cell tumour', 'Clear cell carcinoma', 'Dermoid cyst', 'Simple cyst', 'Normal ovary']",7,False,True,False
 data/raw/OTU_2d/images/228.JPG,6,Simple cyst,6,Simple cyst,0.8324596285820007,"[1, 4, 6, 7]","['Serous cystadenoma', 'Clear cell carcinoma', 'Simple cyst', 'Normal ovary']",4,False,True,True
 data/raw/OTU_2d/images/652.JPG,5,Dermoid cyst,5,Dermoid cyst,0.47240009903907776,"[3, 4, 5, 7]","['Theca cell tumour', 'Clear cell carcinoma', 'Dermoid cyst', 'Normal ovary']",4,False,True,True
-data/raw/OTU_2d/images/1095.JPG,2,Teratoma,2,Teratoma,0.9353655576705933,"[2, 3, 4, 6, 7]","['Teratoma', 'Theca cell tumour', 'Clear cell carcinoma', 'Simple cyst', 'Normal ovary']",5,False,True,True
+data/raw/OTU_2d/images/1095.JPG,2,Teratoma,2,Teratoma,0.9353655576705933,[2],['Teratoma'],1,True,True,True
 data/raw/OTU_2d/images/1444.JPG,7,Normal ovary,7,Normal ovary,0.9693818688392639,"[1, 7]","['Serous cystadenoma', 'Normal ovary']",2,False,True,True
 data/raw/OTU_2d/images/776.JPG,2,Teratoma,3,Theca cell tumour,0.3217037618160248,"[2, 3, 4, 5, 6, 7]","['Teratoma', 'Theca cell tumour', 'Clear cell carcinoma', 'Dermoid cyst', 'Simple cyst', 'Normal ovary']",6,False,True,False
 data/raw/OTU_2d/images/971.JPG,2,Teratoma,2,Teratoma,0.823208212852478,"[2, 3, 4, 6, 7]","['Teratoma', 'Theca cell tumour', 'Clear cell carcinoma', 'Simple cyst', 'Normal ovary']",5,False,True,True
@@ -269,7 +269,7 @@ data/raw/OTU_2d/images/1382.JPG,5,Dermoid cyst,5,Dermoid cyst,0.3905342519283294
 data/raw/OTU_2d/images/1002.JPG,5,Dermoid cyst,1,Serous cystadenoma,0.6090565919876099,"[1, 3, 4, 6, 7]","['Serous cystadenoma', 'Theca cell tumour', 'Clear cell carcinoma', 'Simple cyst', 'Normal ovary']",5,False,False,False
 data/raw/OTU_2d/images/301.JPG,1,Serous cystadenoma,1,Serous cystadenoma,0.6828455328941345,"[1, 3, 4, 5, 7]","['Serous cystadenoma', 'Theca cell tumour', 'Clear cell carcinoma', 'Dermoid cyst', 'Normal ovary']",5,False,True,True
 data/raw/OTU_2d/images/863.JPG,0,Chocolate cyst,0,Chocolate cyst,0.4454939663410187,"[0, 1, 2, 3, 4, 6, 7]","['Chocolate cyst', 'Serous cystadenoma', 'Teratoma', 'Theca cell tumour', 'Clear cell carcinoma', 'Simple cyst', 'Normal ovary']",7,False,True,True
-data/raw/OTU_2d/images/504.JPG,2,Teratoma,2,Teratoma,0.9265905022621155,"[2, 3, 4, 6, 7]","['Teratoma', 'Theca cell tumour', 'Clear cell carcinoma', 'Simple cyst', 'Normal ovary']",5,False,True,True
+data/raw/OTU_2d/images/504.JPG,2,Teratoma,2,Teratoma,0.9265905022621155,[2],['Teratoma'],1,True,True,True
 data/raw/OTU_2d/images/163.JPG,0,Chocolate cyst,0,Chocolate cyst,0.5951256155967712,"[0, 1, 2, 3, 4, 6, 7]","['Chocolate cyst', 'Serous cystadenoma', 'Teratoma', 'Theca cell tumour', 'Clear cell carcinoma', 'Simple cyst', 'Normal ovary']",7,False,True,True
 data/raw/OTU_2d/images/1062.JPG,0,Chocolate cyst,0,Chocolate cyst,0.8199809193611145,"[0, 1, 3, 4, 7]","['Chocolate cyst', 'Serous cystadenoma', 'Theca cell tumour', 'Clear cell carcinoma', 'Normal ovary']",5,False,True,True
 data/raw/OTU_2d/images/627.JPG,3,Theca cell tumour,6,Simple cyst,0.366425096988678,"[0, 1, 3, 4, 5, 6]","['Chocolate cyst', 'Serous cystadenoma', 'Theca cell tumour', 'Clear cell carcinoma', 'Dermoid cyst', 'Simple cyst']",6,False,True,False

@@ -497,7 +497,7 @@ class SegmentationTrainer:
                             scheduler.state_dict() if scheduler is not None else None
                         ),
                         "best_val_dice": self.best_val_dice,
-                        "config": self.model.cf,
+                        "config": getattr(self.model, "cf", None),
                     }, best_ckpt_path)
                     self.logger.info(
                         f"  ✓ New best val_dice={self.best_val_dice:.4f} "

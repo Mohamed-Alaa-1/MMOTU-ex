@@ -1,0 +1,62 @@
+{
+    "per_model_accuracy": {
+        "densenet121": {
+            "n_test": 294,
+            "n_correct": 213,
+            "accuracy": 0.7244897959183674,
+            "accuracy_pct": 72.44897959183673,
+            "accuracy_ci_lo_pct": 67.3469387755102,
+            "accuracy_ci_hi_pct": 77.55102040816327
+        },
+        "efficientnet_b3": {
+            "n_test": 294,
+            "n_correct": 206,
+            "accuracy": 0.7006802721088435,
+            "accuracy_pct": 70.06802721088435,
+            "accuracy_ci_lo_pct": 64.96598639455783,
+            "accuracy_ci_hi_pct": 75.17006802721087
+        },
+        "ensemble": {
+            "n_test": 294,
+            "n_correct": 231,
+            "accuracy": 0.7857142857142857,
+            "accuracy_pct": 78.57142857142857,
+            "accuracy_ci_lo_pct": 73.80952380952381,
+            "accuracy_ci_hi_pct": 83.33333333333334
+        },
+        "mobilenet_v3_large": {
+            "n_test": 294,
+            "n_correct": 213,
+            "accuracy": 0.7244897959183674,
+            "accuracy_pct": 72.44897959183673,
+            "accuracy_ci_lo_pct": 67.3469387755102,
+            "accuracy_ci_hi_pct": 77.55102040816327
+        },
+        "resnet50": {
+            "n_test": 294,
+            "n_correct": 219,
+            "accuracy": 0.7448979591836735,
+            "accuracy_pct": 74.48979591836735,
+            "accuracy_ci_lo_pct": 69.38775510204081,
+            "accuracy_ci_hi_pct": 79.25170068027211
+        },
+        "swin_t": {
+            "n_test": 294,
+            "n_correct": 225,
+            "accuracy": 0.7653061224489796,
+            "accuracy_pct": 76.53061224489795,
+            "accuracy_ci_lo_pct": 71.7687074829932,
+            "accuracy_ci_hi_pct": 81.29251700680273
+        }
+    },
+    "mcnemar": {
+        "n_both_correct": 205,
+        "n_a_only_correct": 26,
+        "n_b_only_correct": 14,
+        "n_both_wrong": 49,
+        "discordant_pairs": 40,
+        "statistic": 3.025,
+        "pvalue": 0.08199032100038259,
+        "significant_0.05": false
+    }
+}

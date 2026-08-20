@@ -36,7 +36,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
 
-from segmentation.models.blocks import (
+from .blocks import (
     LightweightASPP, LightweightAttentionGate, DeconvBlock, LightweightResBlock
 )
 
