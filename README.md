@@ -183,7 +183,7 @@ MMOTU-ex/
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/MMOTU-ex.git
+git clone https://github.com/Mohamed-Alaa-1/MMOTU-ex.git
 cd MMOTU-ex
 
 # Create and activate a virtual environment
