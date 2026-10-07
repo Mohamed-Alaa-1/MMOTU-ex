@@ -233,7 +233,7 @@ def main() -> None:
     # DataLoaders
     # -----------------------------------------------------------------------
     logger.info("Building dataloaders ...")
-    train_loader, val_loader, test_loader = get_segmentation_dataloaders(
+    train_loader, val_loader, calib_loader, test_loader = get_segmentation_dataloaders(
         splits_csv=splits_csv,
         image_size=256,
         batch_size=args.batch_size,

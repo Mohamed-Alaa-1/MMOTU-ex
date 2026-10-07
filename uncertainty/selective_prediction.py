@@ -1,27 +1,19 @@
 import numpy as np
 
 
-def risk_coverage_curve(probs: np.ndarray, labels: np.ndarray, uncertainty_scores: np.ndarray):
-    probs = np.asarray(probs)
-    labels = np.asarray(labels)
-    uncertainty_scores = np.asarray(uncertainty_scores)
+def coverage_at_risk(coverages: np.ndarray, risks: np.ndarray, target: float) -> float:
+    ok = np.flatnonzero(risks <= target)
+    return float(coverages[ok.max()]) if ok.size else 0.0
 
-    order = np.argsort(uncertainty_scores)
-    sorted_labels = labels[order]
-    sorted_preds = probs[order].argmax(axis=1)
 
-    coverages = []
-    risks = []
+def risk_coverage_curve(probs: np.ndarray, labels: np.ndarray, uncertainty_scores: np.ndarray) -> dict:
+    """Exact risk coverage curve over all n operating points; AURC = mean selective risk."""
     n = len(labels)
-
-    for k in range(1, n + 1):
-        retained_accuracy = np.mean(sorted_preds[:k] == sorted_labels[:k])
-        coverages.append(k / n)
-        risks.append(1.0 - retained_accuracy)
-
-    aurc = float(np.trapz(risks, coverages)) if n > 1 else float(risks[0] if risks else 0.0)
-    return {
-        "coverages": coverages,
-        "risks": risks,
-        "aurc": aurc,
-    }
+    errors = (probs.argmax(1) != labels).astype(np.float64)
+    order = np.argsort(uncertainty_scores, kind="stable")          # most confident first
+    k = np.arange(1, n + 1)
+    risks = np.cumsum(errors[order]) / k
+    coverages = k / n
+    return {"coverages": coverages.tolist(), "risks": risks.tolist(), "aurc": float(risks.mean()),
+            "coverage_at_5pct_risk": coverage_at_risk(coverages, risks, 0.05),
+            "coverage_at_10pct_risk": coverage_at_risk(coverages, risks, 0.10)}

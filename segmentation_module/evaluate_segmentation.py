@@ -171,11 +171,11 @@ def main():
     
     # 1. Load Data
     splits_df = pd.read_csv(_PROJECT_ROOT / args.splits)
-    val_df = splits_df[splits_df["split"] == "val"].reset_index(drop=True)
+    calib_df = splits_df[splits_df["split"] == "calib"].reset_index(drop=True)
     test_df = splits_df[splits_df["split"] == "test"].reset_index(drop=True)
     
-    print(f"\nLoading validation set ({len(val_df)} images) for Conformal Calibration...")
-    val_images, val_masks = collect_dataset_tensors(val_df, device)
+    print(f"\nLoading calibration set ({len(calib_df)} images) for Conformal Calibration...")
+    calib_images, calib_masks = collect_dataset_tensors(calib_df, device)
     
     print(f"Loading test set ({len(test_df)} images) for Final Evaluation...")
     test_images, test_masks = collect_dataset_tensors(test_df, device)
@@ -197,15 +197,15 @@ def main():
     crc = SegmentationConformalRiskController(alpha=args.alpha)
 
     print("  -> Generating probability maps for calibration set...")
-    val_est = []
+    calib_est = []
     chunk_size = 16
-    for i in tqdm(range(0, len(val_images), chunk_size), desc="Val Inference"):
-        chunk = val_images[i:i+chunk_size]
+    for i in tqdm(range(0, len(calib_images), chunk_size), desc="Calib Inference"):
+        chunk = calib_images[i:i+chunk_size]
         res = estimator.predict(chunk)
-        val_est.append(res["mean_probs"])
-    val_prob_maps = np.concatenate(val_est, axis=0)
+        calib_est.append(res["mean_probs"])
+    calib_prob_maps = np.concatenate(calib_est, axis=0)
 
-    crc.calibrate(val_prob_maps, val_masks.cpu().numpy())
+    crc.calibrate(calib_prob_maps, calib_masks.cpu().numpy())
     crc_summary = crc.summary()
     calib_lambda = crc.lambda_star
 

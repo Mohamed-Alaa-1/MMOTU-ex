@@ -122,15 +122,7 @@ class SegmentationConformalRiskController:
     ) -> "SegmentationConformalRiskController":
         """Fit lambda_star using finite-sample corrected CRC.
 
-        Uses alpha_corrected = (n/(n+1)) * alpha, which provides the
-        formal guarantee: E[test FNR] <= alpha (Angelopoulos & Bates 2022).
-
-        Args:
-            prob_maps: [N, H, W] or [N, 1, H, W] predicted probability maps.
-            gt_masks:  Corresponding ground-truth masks, same shape, binary.
-
-        Returns:
-            self.
+        Uses the exact Angelopoulos & Bates bound: (n * R + 1) / (n + 1) <= alpha.
         """
         prob_maps = np.asarray(prob_maps, dtype=np.float32)
         gt_masks  = np.asarray(gt_masks,  dtype=np.float32)
@@ -148,36 +140,43 @@ class SegmentationConformalRiskController:
                 f"gt_masks {gt_masks.shape}."
             )
 
-        self.n_calibration = len(prob_maps)
+        n = len(prob_maps)
+        self.n_calibration = n
+        
+        # Check empty masks for reporting
         self.n_empty_masks = int(sum(
             1 for gt in gt_masks if gt.astype(bool).sum() == 0
         ))
 
-        # Finite-sample corrected risk level
-        n = self.n_calibration
-        self.alpha_corrected = float((n / (n + 1)) * self.alpha)
-
-        # Compute mean FNR for every threshold on the grid
-        mean_fnrs = np.array([
-            np.mean([
-                _image_fnr(p, g, lam)
-                for p, g in zip(prob_maps, gt_masks)
-            ])
-            for lam in _LAMBDA_GRID
-        ])
-
+        # Agent's vectorized exact computation
+        grid = np.linspace(0.0, 1.0, 1001)
+        fnr = []
+        for p, m in zip(prob_maps, gt_masks):
+            g = np.sort(p[np.asarray(m) > 0].ravel())
+            if g.size:
+                fnr.append(np.searchsorted(g, grid, side="left") / g.size)
+            else:
+                fnr.append(np.zeros_like(grid))
+        
+        fnr = np.stack(fnr)
+        mean_fnrs = fnr.mean(0)
+        corrected = (n * mean_fnrs + 1.0) / (n + 1)
+        
+        ok = np.flatnonzero(corrected <= self.alpha)
+        
+        self.alpha_corrected = float((self.alpha * (n + 1) - 1.0) / n)
+        
         # FNR at standard 0.5 threshold (for reporting)
-        idx_05 = int(np.argmin(np.abs(_LAMBDA_GRID - 0.5)))
+        idx_05 = int(np.argmin(np.abs(grid - 0.5)))
         self.calibration_fnr_at_05 = float(mean_fnrs[idx_05])
 
-        # CRC threshold: largest lambda where mean_FNR <= alpha_corrected
-        valid_mask = mean_fnrs <= self.alpha_corrected
-        if not valid_mask.any():
+        if ok.size == 0:
+            # Fallback if no threshold is strict enough
             self.lambda_star = 0.0
             self.calibration_fnr = float(mean_fnrs[0])
         else:
-            best_idx = int(np.where(valid_mask)[0].max())
-            self.lambda_star = float(_LAMBDA_GRID[best_idx])
+            best_idx = int(ok.max())
+            self.lambda_star = float(grid[best_idx])
             self.calibration_fnr = float(mean_fnrs[best_idx])
 
         return self

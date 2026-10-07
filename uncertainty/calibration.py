@@ -1,15 +1,19 @@
+import logging
 import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+logger = logging.getLogger(__name__)
+
 
 class TemperatureScaler(nn.Module):
-    """Single scalar temperature T fit on held-out logits via NLL minimization."""
+    """Scalar temperature fit by NLL minimisation. T<1 sharpens (model underconfident), T>1 softens."""
 
     def __init__(self):
         super().__init__()
         self.log_temperature = nn.Parameter(torch.zeros(1))
+        self.nll_before = self.nll_after = float("nan")
 
     @property
     def temperature(self) -> torch.Tensor:
@@ -18,34 +22,36 @@ class TemperatureScaler(nn.Module):
     def forward(self, logits: torch.Tensor) -> torch.Tensor:
         return logits / self.temperature
 
-    def fit(self, logits: torch.Tensor, labels: torch.Tensor, max_iter: int = 200, lr: float = 0.01) -> float:
-        logits = logits.detach()
-        labels = labels.detach()
-        optimizer = torch.optim.LBFGS([self.log_temperature], lr=lr, max_iter=max_iter)
+    def fit(self, logits: torch.Tensor, labels: torch.Tensor, max_iter: int = 500) -> float:
+        logits, labels = logits.detach().float(), labels.detach().long()
+        with torch.no_grad():
+            self.nll_before = F.cross_entropy(logits, labels).item()
+        opt = torch.optim.LBFGS([self.log_temperature], lr=1.0, max_iter=max_iter,
+                                tolerance_grad=1e-9, tolerance_change=1e-12, line_search_fn="strong_wolfe")
 
         def closure():
-            optimizer.zero_grad()
-            loss = F.cross_entropy(self.forward(logits), labels)
+            opt.zero_grad()
+            loss = F.cross_entropy(logits / self.temperature, labels)
             loss.backward()
             return loss
 
-        optimizer.step(closure)
+        opt.step(closure)
+        with torch.no_grad():
+            self.nll_after = F.cross_entropy(logits / self.temperature, labels).item()
+            if self.nll_after > self.nll_before + 1e-6:
+                logger.warning("LBFGS did not improve NLL; resetting T=1.")
+                self.log_temperature.zero_()
+                self.nll_after = self.nll_before
         return self.temperature.item()
 
 
 def expected_calibration_error(probs: np.ndarray, labels: np.ndarray, n_bins: int = 15) -> float:
-    confidences = probs.max(axis=1)
-    predictions = probs.argmax(axis=1)
-    accuracies = (predictions == labels).astype(np.float64)
-
-    bin_boundaries = np.linspace(0.0, 1.0, n_bins + 1)
-    ece = 0.0
-    n = len(confidences)
-    for lo, hi in zip(bin_boundaries[:-1], bin_boundaries[1:]):
-        in_bin = (confidences > lo) & (confidences <= hi)
-        if in_bin.sum() == 0:
-            continue
-        bin_acc = accuracies[in_bin].mean()
-        bin_conf = confidences[in_bin].mean()
-        ece += (in_bin.sum() / n) * abs(bin_acc - bin_conf)
+    conf, pred = probs.max(1), probs.argmax(1)
+    acc = (pred == labels).astype(np.float64)
+    edges = np.linspace(0.0, 1.0, n_bins + 1)
+    ece, n = 0.0, len(conf)
+    for lo, hi in zip(edges[:-1], edges[1:]):
+        m = (conf > lo) & (conf <= hi)
+        if m.any():
+            ece += m.sum() / n * abs(acc[m].mean() - conf[m].mean())
     return float(ece)

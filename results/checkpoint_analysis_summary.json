@@ -1,0 +1,13 @@
+{
+  "aurc_from_perimage": 0.3216117588784416,
+  "full_set_dice": 0.6404619047619048,
+  "baseline_risk": 0.3595380952380952,
+  "n_empty_mask_test": 5,
+  "n_valid_fnr_test": 294,
+  "caliper_obs_diff_B_minus_A": 0.053229591836734695,
+  "caliper_ci_lo": 0.01567204081632653,
+  "caliper_ci_hi": 0.0899844387755102,
+  "caliper_p": 0.0017376581087343323,
+  "caliper_d": 0.16481451488167545,
+  "laura_ensemble_fps": 11.008917631041525
+}

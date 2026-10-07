@@ -1,466 +1,106 @@
-"""
-uncertainty/conformal.py
-
-MondrianAPS and RAPS conformal predictors for multi-class classification.
-
-Theory background
------------------
-Adaptive Prediction Sets (APS) — Angelopoulos et al. 2020.
-  For each calibration sample (p, y):
-      score(p, y) = cumulative probability when classes are sorted
-                    descending by probability, up to and INCLUDING
-                    the true class.
-  At test time, include all classes up to (and including) the first
-  class whose cumulative probability exceeds the class-specific
-  threshold q_hat(y).
-
-Mondrian / Class-Conditional split:
-  For each class c separately, find the (1-alpha) quantile of the
-  APS scores among calibration samples with true label = c.
-  Use the global quantile as fallback if a class has fewer than
-  min_calibration_per_class samples.
-
-Finite-sample correction:
-  For n calibration samples in class c, the quantile level is
-      q_level = ceil((n+1)*(1-alpha)) / n,  clipped to 1.0.
-  This guarantees (1-alpha) marginal coverage even for small n
-  (Vovk et al., Tibshirani et al.).
-
-RAPS — Regularized APS (Angelopoulos et al. 2021):
-  Adds a penalty term  lambda * max(0, rank - k_reg)
-  to each APS score, discouraging large prediction sets.
-  lambda >= 0 (regularisation strength), k_reg (grace rank).
-
-Step-by-step inclusion logic (predict_sets)
--------------------------------------------
-Given test softmax probabilities p[0..K-1]:
-  1. Sort classes in descending order of p -> order[].
-  2. Compute cumulative sum of sorted probabilities -> L[rank].
-  3. For each rank r (0, 1, 2, ...):
-       class c   = order[r]
-       threshold = class_thresholds.get(c, global_threshold)
-       if L[r] <= threshold:   include class c
-       else:                   stop
-  4. If the resulting set is empty, add the top-1 class.
-
-This ensures every set contains at least 1 class.
-"""
-
-from __future__ import annotations
-
-import logging
-from typing import Dict, List, Optional
-
+import math
+from typing import List
 import numpy as np
 
-logger = logging.getLogger(__name__)
+# Backwards compatible alias at bottom for existing imports.
 
 
-# ---------------------------------------------------------------------------
-# APS score helper
-# ---------------------------------------------------------------------------
-
-def _aps_score(probs: np.ndarray, label: int) -> float:
-    """Compute the APS non-conformity score for a single sample.
-
-    The score is the cumulative probability mass up to and including
-    the true class when classes are sorted by descending probability.
-
-    Args:
-        probs: 1-D array of softmax probabilities (must sum to ~1).
-        label: Integer true class index.
-
-    Returns:
-        Scalar in (0, 1].
-    """
-    order = np.argsort(-probs)            # descending rank order
-    sorted_probs = probs[order]           # probabilities in rank order
-    cumulative = np.cumsum(sorted_probs)  # cumulative sums
-    label_position = int(np.where(order == label)[0][0])
-    return float(cumulative[label_position])
+def score_matrix(probs: np.ndarray, kind: str, k_reg: int = 5, lambda_reg: float = 0.01) -> np.ndarray:
+    """Nonconformity score of EVERY candidate class, shape (N, K)."""
+    if kind == "lac":
+        return 1.0 - probs
+    if kind in ("aps", "raps"):
+        order = np.argsort(-probs, axis=1, kind="stable")
+        cum = np.cumsum(np.take_along_axis(probs, order, axis=1), axis=1)
+        if kind == "raps":
+            # Add regularization penalty for ranks > k_reg
+            # rank is 1-indexed; penalty starts when rank > k_reg
+            ranks = np.arange(1, probs.shape[1] + 1)[None, :]
+            penalty = np.maximum(0, ranks - k_reg) * lambda_reg
+            cum += penalty
+        scores = np.empty_like(cum)
+        np.put_along_axis(scores, order, cum, axis=1)
+        return scores
+    raise ValueError(f"Unknown score '{kind}'")
 
 
-def _raps_score(probs: np.ndarray, label: int,
-                lam: float = 0.01, k_reg: int = 5) -> float:
-    """Compute the RAPS non-conformity score.
-
-    RAPS adds a regularisation penalty to APS to discourage large
-    prediction sets:  score = APS_score + lambda * max(0, rank - k_reg)
-    where rank is the 0-indexed position of the true class (0 = top-1).
-
-    Args:
-        probs:  1-D softmax probabilities.
-        label:  Integer true class index.
-        lam:    Regularisation strength (>= 0).
-        k_reg:  Grace rank. Classes ranked <= k_reg incur no penalty.
-
-    Returns:
-        Scalar >= 0.
-    """
-    order = np.argsort(-probs)
-    label_position = int(np.where(order == label)[0][0])
-    aps = _aps_score(probs, label)
-    penalty = lam * max(0, label_position - k_reg)
-    return float(aps + penalty)
+def conformal_rank(n: int, alpha: float) -> int:
+    return math.ceil(round((n + 1) * (1.0 - alpha), 10))
 
 
-# ---------------------------------------------------------------------------
-# Mondrian APS conformal predictor
-# ---------------------------------------------------------------------------
+def _qhat(scores: np.ndarray, alpha: float) -> float:
+    n = len(scores)
+    k = conformal_rank(n, alpha)
+    return float("inf") if (n == 0 or k > n) else float(np.sort(scores)[k - 1])
 
-class MondrianAPSConformalPredictor:
-    """Class-conditional (Mondrian) conformal predictor using APS scores.
 
-    Per-class calibration is performed independently for each class,
-    providing class-conditional coverage guarantees (one per class).
-    Classes with fewer than `min_calibration_per_class` samples fall back
-    to a global threshold computed over all calibration samples.
-
-    Args:
-        alpha: Miscoverage level; target coverage is (1 - alpha).
-        min_calibration_per_class: Minimum samples required to compute a
-            per-class threshold (default 10).
+class MondrianConformalPredictor:
+    """Class conditional split conformal prediction.
+    Set(x) = {y : s(x, y) <= qhat_y}. Every class is tested independently, so the true class is
+    retained with probability >= 1 - alpha conditional on Y = y whenever class y is not on fallback.
     """
 
-    def __init__(self, alpha: float = 0.1,
-                 min_calibration_per_class: int = 10) -> None:
-        self.alpha = alpha
-        self.min_calibration_per_class = min_calibration_per_class
-        self.class_thresholds: Dict[int, float] = {}
-        self.global_threshold: Optional[float] = None
-        self.calibration_counts: Dict[int, int] = {}   # n per class
-        self.fallback_classes: List[int] = []           # classes using global
+    def __init__(self, alpha: float = 0.10, min_calibration_per_class: int = 10,
+                 score: str = "lac", rare_class_policy: str = "global"):
+        assert score in ("lac", "aps", "raps") and rare_class_policy in ("global", "inf")
+        self.alpha, self.min_cal, self.score, self.policy = alpha, min_calibration_per_class, score, rare_class_policy
+        self.class_qhat = None
+        self.class_n = None
+        self.global_qhat = float("inf")
+        self.fallback_classes: List[int] = []
 
-    # ------------------------------------------------------------------ #
-    @staticmethod
-    def _aps_score(probs_row: np.ndarray, true_label: int) -> float:
-        return _aps_score(probs_row, true_label)
+    def calibrate(self, cal_probs: np.ndarray, cal_labels: np.ndarray) -> None:
+        K = cal_probs.shape[1]
+        cal_labels = np.asarray(cal_labels, dtype=int)
+        true_scores = score_matrix(cal_probs, self.score)[np.arange(len(cal_labels)), cal_labels]
+        self.global_qhat = _qhat(true_scores, self.alpha)
+        self.class_qhat = np.full(K, np.inf)
+        self.class_n = np.zeros(K, dtype=int)
+        self.fallback_classes = []
+        for c in range(K):
+            s = true_scores[cal_labels == c]
+            self.class_n[c] = len(s)
+            if len(s) < self.min_cal or conformal_rank(len(s), self.alpha) > len(s):
+                self.fallback_classes.append(c)
+                self.class_qhat[c] = self.global_qhat if self.policy == "global" else np.inf
+            else:
+                self.class_qhat[c] = _qhat(s, self.alpha)
 
-    # ------------------------------------------------------------------ #
-    def calibrate(
-        self,
-        probs: np.ndarray,
-        labels: np.ndarray,
-    ) -> "MondrianAPSConformalPredictor":
-        """Fit per-class thresholds from calibration data.
-
-        Args:
-            probs:  [N, K] float array of softmax probabilities.
-            labels: [N] integer array of true class indices.
-
-        Returns:
-            self  (for method chaining).
-        """
-        probs  = np.asarray(probs,  dtype=np.float64)
-        labels = np.asarray(labels, dtype=np.int64)
-
-        # --- Collect per-class APS scores ---
-        scores_by_class: Dict[int, List[float]] = {}
-        for probs_row, label in zip(probs, labels):
-            scores_by_class.setdefault(int(label), []).append(
-                self._aps_score(probs_row, int(label))
-            )
-
-        # --- Global fallback threshold (over ALL calibration samples) ---
-        all_scores: List[float] = []
-        for scores in scores_by_class.values():
-            all_scores.extend(scores)
-
-        n_all = len(all_scores)
-        q_level_all = min(
-            np.ceil((n_all + 1) * (1 - self.alpha)) / n_all, 1.0
-        )
-        self.global_threshold = float(
-            np.quantile(all_scores, q_level_all, method="higher")
-        )
-
-        # --- Per-class thresholds with finite-sample correction ---
-        self.calibration_counts = {}
-        self.fallback_classes   = []
-        self.class_thresholds   = {}
-
-        for class_label, scores in sorted(scores_by_class.items()):
-            n = len(scores)
-            self.calibration_counts[class_label] = n
-
-            if n < self.min_calibration_per_class:
-                self.fallback_classes.append(class_label)
-                logger.warning(
-                    "Class %d has only %d calibration samples "
-                    "(minimum=%d); using global threshold %.4f.",
-                    class_label, n,
-                    self.min_calibration_per_class,
-                    self.global_threshold,
-                )
-                continue
-
-            # Finite-sample corrected quantile level
-            q_level = min(
-                np.ceil((n + 1) * (1 - self.alpha)) / n, 1.0
-            )
-            self.class_thresholds[class_label] = float(
-                np.quantile(scores, q_level, method="higher")
-            )
-
-        logger.info(
-            "Conformal calibration complete. "
-            "alpha=%.3f  global_threshold=%.4f  "
-            "per-class thresholds computed for %d/%d classes  "
-            "fallback classes=%s",
-            self.alpha,
-            self.global_threshold,
-            len(self.class_thresholds),
-            len(scores_by_class),
-            self.fallback_classes,
-        )
-
-        return self
-
-    # ------------------------------------------------------------------ #
-    def predict_sets(self, probs: np.ndarray) -> List[List[int]]:
-        """Produce conformal prediction sets for a batch of samples.
-
-        Step-by-step inclusion logic
-        ----------------------------
-        For each sample with softmax probabilities p[0..K-1]:
-          1. Sort classes in descending order of p   ->  order[]
-          2. Compute cumulative sums of sorted p      ->  L[rank]
-          3. Walk ranks r = 0, 1, 2, ...:
-               class c   = order[r]
-               q_hat     = class_thresholds.get(c, global_threshold)
-               if L[r] <= q_hat: include class c  (continue to next rank)
-               else:             stop  (do NOT include c)
-          4. Guarantee non-empty set: if set is empty, return [argmax(p)].
-
-        Args:
-            probs: [N, K] softmax probabilities.
-
-        Returns:
-            List of N lists, each containing the predicted class indices.
-        """
-        probs = np.asarray(probs, dtype=np.float64)
-        prediction_sets: List[List[int]] = []
-
-        for sample_probs in probs:
-            order      = np.argsort(-sample_probs)   # descending
-            sorted_p   = sample_probs[order]
-            cumsum     = np.cumsum(sorted_p)
-            sample_set: List[int] = []
-
-            for rank, class_idx in enumerate(order):
-                q_hat = self.class_thresholds.get(
-                    int(class_idx), self.global_threshold
-                )
-                if cumsum[rank] <= q_hat:
-                    sample_set.append(int(class_idx))
-                else:
-                    break
-
-            if not sample_set:
-                sample_set = [int(np.argmax(sample_probs))]
-
-            prediction_sets.append(sample_set)
-
-        return prediction_sets
-
-
-# ---------------------------------------------------------------------------
-# RAPS conformal predictor
-# ---------------------------------------------------------------------------
-
-class RAPSConformalPredictor:
-    """Regularized Adaptive Prediction Sets (RAPS) conformal predictor.
-
-    RAPS adds a regularisation penalty to APS scores to produce smaller
-    prediction sets without sacrificing coverage.  Particularly useful
-    for clinical applications where compact prediction sets improve utility.
-
-    Reference: Angelopoulos et al. (2021) 'Uncertainty Sets for Image
-    Classifiers using Conformal Prediction'.
-
-    Args:
-        alpha:  Miscoverage level.
-        lam:    Regularisation strength (lambda >= 0). Larger values
-                produce smaller sets. Typical starting value: 0.01.
-        k_reg:  Grace rank. Classes ranked <= k_reg (0-indexed) incur
-                no penalty. Typical values: 1..5.
-    """
-
-    def __init__(self, alpha: float = 0.1,
-                 lam: float = 0.01, k_reg: int = 5) -> None:
-        self.alpha  = alpha
-        self.lam    = lam
-        self.k_reg  = k_reg
-        self.q_hat: Optional[float] = None
-
-    def calibrate(
-        self, probs: np.ndarray, labels: np.ndarray
-    ) -> "RAPSConformalPredictor":
-        """Compute the global RAPS threshold from calibration data.
-
-        Args:
-            probs:  [N, K] softmax probabilities.
-            labels: [N] true class indices.
-
-        Returns:
-            self.
-        """
-        probs  = np.asarray(probs,  dtype=np.float64)
-        labels = np.asarray(labels, dtype=np.int64)
-
-        scores = np.array([
-            _raps_score(p, int(y), lam=self.lam, k_reg=self.k_reg)
-            for p, y in zip(probs, labels)
-        ])
-
-        n = len(scores)
-        q_level = min(np.ceil((n + 1) * (1 - self.alpha)) / n, 1.0)
-        self.q_hat = float(np.quantile(scores, q_level, method="higher"))
-
-        logger.info(
-            "RAPS calibration complete. alpha=%.3f  lam=%.4f  "
-            "k_reg=%d  q_hat=%.4f",
-            self.alpha, self.lam, self.k_reg, self.q_hat,
-        )
-        return self
+    def predict_mask(self, probs: np.ndarray) -> np.ndarray:
+        mask = score_matrix(probs, self.score) <= self.class_qhat[None, :]
+        empty = ~mask.any(axis=1)
+        if empty.any():                                   # union with top 1 never reduces coverage
+            mask[empty, probs[empty].argmax(1)] = True
+        return mask
 
     def predict_sets(self, probs: np.ndarray) -> List[List[int]]:
-        """Produce RAPS conformal prediction sets.
-
-        Inclusion rule: include class c at rank r if
-            L[r] + lambda * max(0, r - k_reg) <= q_hat
-        where L[r] is the cumulative probability up to rank r.
-
-        Args:
-            probs: [N, K] softmax probabilities.
-
-        Returns:
-            List of N lists of predicted class indices.
-        """
-        if self.q_hat is None:
-            raise RuntimeError("Call calibrate() before predict_sets().")
-
-        probs = np.asarray(probs, dtype=np.float64)
-        prediction_sets: List[List[int]] = []
-
-        for sample_probs in probs:
-            order    = np.argsort(-sample_probs)
-            sorted_p = sample_probs[order]
-            cumsum   = np.cumsum(sorted_p)
-            sample_set: List[int] = []
-
-            for rank, class_idx in enumerate(order):
-                regularised_score = cumsum[rank] + self.lam * max(
-                    0, rank - self.k_reg
-                )
-                if regularised_score <= self.q_hat:
-                    sample_set.append(int(class_idx))
-                else:
-                    break
-
-            if not sample_set:
-                sample_set = [int(np.argmax(sample_probs))]
-
-            prediction_sets.append(sample_set)
-
-        return prediction_sets
+        return [np.flatnonzero(r).tolist() for r in self.predict_mask(probs)]
 
 
-# ---------------------------------------------------------------------------
-# Evaluation
-# ---------------------------------------------------------------------------
-
-def _bootstrap_ci(
-    values: np.ndarray,
-    n_boot: int = 2000,
-    ci: float = 0.95,
-) -> tuple:
-    """Bootstrap 95% CI for the mean of `values`."""
-    rng   = np.random.default_rng(seed=0)
-    means = [rng.choice(values, size=len(values), replace=True).mean()
-             for _ in range(n_boot)]
-    lo = float(np.percentile(means, 100 * (1 - ci) / 2))
-    hi = float(np.percentile(means, 100 * (1 - (1 - ci) / 2)))
-    return lo, hi
+MondrianAPSConformalPredictor = MondrianConformalPredictor
 
 
-def evaluate_conformal_sets(
-    pred_sets,
-    labels: np.ndarray,
-    num_classes: int,
-    n_boot: int = 2000,
-) -> dict:
-    """Compute marginal and per-class coverage with 95% bootstrap CIs.
+def wilson_interval(k: int, n: int, z: float = 1.96):
+    if n == 0:
+        return (float("nan"), float("nan"))
+    p = k / n
+    d = 1 + z**2 / n
+    centre = (p + z**2 / (2 * n)) / d
+    half = z * math.sqrt(p * (1 - p) / n + z**2 / (4 * n**2)) / d
+    return (max(0.0, centre - half), min(1.0, centre + half))
 
-    IMPORTANT — Calibration-set vs. test-set coverage
-    --------------------------------------------------
-    When called with the **calibration** data (same data used in `calibrate()`),
-    APS/RAPS construction guarantees coverage >= (1 - alpha) by design. This
-    means marginal_coverage will often be exactly 1.0 on calibration data,
-    and marginal_coverage_ci = (1.0, 1.0). This is mathematically expected and
-    correct — it is NOT evidence of perfect generalisation.
 
-    For a valid, unbiased estimate of test-set coverage, always call this
-    function with **held-out test** predictions (data NOT used in calibrate()).
-
-    Args:
-        pred_sets:   List of N prediction sets (each a list of class indices).
-        labels:      [N] true class indices.
-        num_classes: Total number of classes K.
-        n_boot:      Bootstrap resamples for confidence intervals.
-
-    Returns:
-        dict with keys:
-          marginal_coverage           float
-          marginal_coverage_ci        (lo, hi) tuple
-          avg_set_size                float
-          singleton_rate              float
-          per_class_coverage          {class: float}
-          per_class_coverage_ci       {class: (lo, hi)}
-          on_calibration_data_warning str or None
-    """
-    labels = np.asarray(labels)
-    covered = np.array([labels[i] in pred_sets[i] for i in range(len(labels))],
-                       dtype=float)
-
-    marginal_coverage = float(covered.mean())
-    marginal_ci       = _bootstrap_ci(covered, n_boot=n_boot)
-    avg_set_size      = float(np.mean([len(s) for s in pred_sets])) if pred_sets else 0.0
-    singleton_rate    = float(np.mean([len(s) == 1 for s in pred_sets])) if pred_sets else 0.0
-
-    # Warn when coverage = 1.0 — likely called on calibration data
-    calibration_warning: str | None = None
-    if marginal_coverage >= 1.0:
-        calibration_warning = (
-            "marginal_coverage=1.0: This is expected when called on the "
-            "calibration set (APS guarantees >=1-alpha coverage by construction). "
-            "Call evaluate_conformal_sets() on held-out TEST data for an unbiased "
-            "coverage estimate."
-        )
-        logger.warning(calibration_warning)
-
-    per_class_coverage = {}
-    per_class_coverage_ci = {}
-
-    for class_label in range(num_classes):
-        class_indices = np.where(labels == class_label)[0]
-        if len(class_indices) == 0:
-            per_class_coverage[class_label]    = float("nan")
-            per_class_coverage_ci[class_label] = (float("nan"), float("nan"))
+def evaluate_conformal_sets(pred_sets: List[List[int]], true_labels: np.ndarray, num_classes: int) -> dict:
+    y = np.asarray(true_labels, dtype=int)
+    covered = np.array([int(y[i]) in pred_sets[i] for i in range(len(y))])
+    sizes = np.array([len(s) for s in pred_sets])
+    pc_cov, pc_size, pc_n, pc_ci = {}, {}, {}, {}
+    for c in range(num_classes):
+        m = y == c
+        if not m.any():
             continue
-
-        class_covered = covered[class_indices]
-        per_class_coverage[class_label]    = float(class_covered.mean())
-        per_class_coverage_ci[class_label] = _bootstrap_ci(
-            class_covered, n_boot=n_boot
-        )
-
-    return {
-        "marginal_coverage":           marginal_coverage,
-        "marginal_coverage_ci":        marginal_ci,
-        "avg_set_size":                avg_set_size,
-        "singleton_rate":              singleton_rate,
-        "per_class_coverage":          per_class_coverage,
-        "per_class_coverage_ci":       per_class_coverage_ci,
-        "on_calibration_data_warning": calibration_warning,
-    }
+        pc_cov[c], pc_size[c], pc_n[c] = float(covered[m].mean()), float(sizes[m].mean()), int(m.sum())
+        pc_ci[c] = wilson_interval(int(covered[m].sum()), int(m.sum()))
+    return {"marginal_coverage": float(covered.mean()), "avg_set_size": float(sizes.mean()),
+            "singleton_rate": float((sizes == 1).mean()), "per_class_coverage": pc_cov,
+            "per_class_set_size": pc_size, "per_class_n": pc_n, "per_class_coverage_ci": pc_ci}

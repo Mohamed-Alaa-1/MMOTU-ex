@@ -394,7 +394,7 @@ def get_segmentation_dataloaders(
     num_workers: int = 4,
     apply_inpainting: bool = True,
 ):
-    """Build train/val/test DataLoaders from a patient-level splits CSV.
+    """Build train/val/calib/test DataLoaders from a patient-level splits CSV.
 
     Training DataLoader:
         - apply_inpainting=True (caliper removal, deterministic)
@@ -402,7 +402,7 @@ def get_segmentation_dataloaders(
         - drop_last=True (required: ASPP BatchNorm crashes on batch size 1
           in train mode; see segmentation_extension_plan.md Section 4)
 
-    Val/Test DataLoaders:
+    Val/Calib/Test DataLoaders:
         - apply_inpainting=True (same inpainting for fair comparison)
         - augment=False (deterministic evaluation)
         - drop_last=False
@@ -410,7 +410,7 @@ def get_segmentation_dataloaders(
     Args:
         splits_csv:       Path to the CSV with image_path, mask_path, split.
         image_size:       Spatial resolution fed to the model (256 default).
-        batch_size:       Batch size for all three loaders.
+        batch_size:       Batch size for all loaders.
         num_workers:      DataLoader worker processes (set 0 for Windows
                           debugging to avoid multiprocessing overhead).
         apply_inpainting: Set False to disable caliper inpainting for
@@ -420,6 +420,7 @@ def get_segmentation_dataloaders(
     df = pd.read_csv(splits_csv)
     train_df = df[df["split"] == "train"].reset_index(drop=True)
     val_df = df[df["split"] == "val"].reset_index(drop=True)
+    calib_df = df[df["split"] == "calib"].reset_index(drop=True)
     test_df = df[df["split"] == "test"].reset_index(drop=True)
 
     train_dataset = MMOTUSegmentationDataset(
@@ -428,6 +429,10 @@ def get_segmentation_dataloaders(
     )
     val_dataset = MMOTUSegmentationDataset(
         val_df, image_size=image_size,
+        apply_inpainting=apply_inpainting, augment=False,
+    )
+    calib_dataset = MMOTUSegmentationDataset(
+        calib_df, image_size=image_size,
         apply_inpainting=apply_inpainting, augment=False,
     )
     test_dataset = MMOTUSegmentationDataset(
@@ -443,9 +448,13 @@ def get_segmentation_dataloaders(
         val_dataset, batch_size=batch_size, shuffle=False,
         num_workers=num_workers, pin_memory=True,
     )
+    calib_loader = DataLoader(
+        calib_dataset, batch_size=batch_size, shuffle=False,
+        num_workers=num_workers, pin_memory=True,
+    )
     test_loader = DataLoader(
         test_dataset, batch_size=batch_size, shuffle=False,
         num_workers=num_workers, pin_memory=True,
     )
 
-    return train_loader, val_loader, test_loader
+    return train_loader, val_loader, calib_loader, test_loader

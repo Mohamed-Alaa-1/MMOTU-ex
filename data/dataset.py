@@ -76,52 +76,49 @@ class MMOTUDataset(Dataset):
             return image_t, mask_t, label, img_path, mask_path
         return image_t, mask_t, label
 
+import random
+
+def _seed_worker(worker_id: int):
+    seed = torch.initial_seed() % 2**32
+    np.random.seed(seed)
+    random.seed(seed)
+
 def get_dataloaders(splits_csv: str, config: any):
+    """Returns (train_loader, val_loader, calib_loader, test_loader).
+    val   -> early stopping / checkpoint selection ONLY
+    calib -> temperature (optional), conformal and CRC calibration ONLY
+    test  -> final evaluation ONLY
+    """
     from data.splits import load_splits
-    train_df, val_df, test_df = load_splits(splits_csv)
-    
-    img_size = config.data.image_size
-    batch_size = config.training.batch_size
-    
-    # In a proper setup, we'd use torchvision v2 transforms to naturally sync.
-    # But sticking to v1 style as requested. Note that random flips will desync image and mask.
-    # Since the spec separates `transform` and `mask_transform` and doesn't ask for synced transforms explicitly, 
-    # and given masks are mostly used for evaluation post-training (XAI), we don't train the model on the mask.
-    # The classification model doesn't use the mask during training! 
-    # Therefore, desynchronized mask during training doesn't hurt training (mask is ignored).
-    # For evaluation, there are no random spatial transforms!
-    
     from torchvision.transforms import RandAugment
 
+    train_df, val_df, calib_df, test_df = load_splits(splits_csv)
+    img_size = config.data.image_size
+    bs = config.training.batch_size
+    nw = getattr(config.data, "num_workers", 4)
+    norm = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+
     train_transform = transforms.Compose([
-        transforms.Resize((img_size, img_size)),
-        RandAugment(num_ops=2, magnitude=9),
-        transforms.RandomHorizontalFlip(p=0.5),
-        transforms.RandomVerticalFlip(p=0.3),
-        transforms.ToTensor(),
-        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-    ])
-    
-    val_transform = transforms.Compose([
-        transforms.Resize((img_size, img_size)),
-        transforms.ToTensor(),
-        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-    ])
-    
+        transforms.Resize((img_size, img_size)), RandAugment(num_ops=2, magnitude=9),
+        transforms.RandomHorizontalFlip(p=0.5), transforms.RandomVerticalFlip(p=0.3),
+        transforms.ToTensor(), norm])
+    eval_transform = transforms.Compose([
+        transforms.Resize((img_size, img_size)), transforms.ToTensor(), norm])
     mask_transform = transforms.Compose([
         transforms.Resize((img_size, img_size), interpolation=transforms.InterpolationMode.NEAREST),
-        transforms.ToTensor()
-    ])
-    
-    train_dataset = MMOTUDataset(train_df, transform=train_transform, mask_transform=mask_transform)
-    val_dataset = MMOTUDataset(val_df, transform=val_transform, mask_transform=mask_transform)
-    test_dataset = MMOTUDataset(test_df, transform=val_transform, mask_transform=mask_transform)
-    
-    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=4, pin_memory=True, drop_last=True)
-    val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False, num_workers=4, pin_memory=True)
-    test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False, num_workers=4, pin_memory=True)
-    
-    return train_loader, val_loader, test_loader
+        transforms.ToTensor()])
+
+    gen = torch.Generator()
+    gen.manual_seed(config.experiment.random_seed)
+
+    def make(df, tf, train: bool):
+        ds = MMOTUDataset(df, transform=tf, mask_transform=mask_transform)
+        return DataLoader(ds, batch_size=bs, shuffle=train, drop_last=train, num_workers=nw,
+                          pin_memory=torch.cuda.is_available(), worker_init_fn=_seed_worker,
+                          generator=gen if train else None, persistent_workers=nw > 0)
+
+    return (make(train_df, train_transform, True), make(val_df, eval_transform, False),
+            make(calib_df, eval_transform, False), make(test_df, eval_transform, False))
 
 def compute_class_weights(train_df: pd.DataFrame) -> torch.FloatTensor:
     counts = train_df['class_label'].value_counts().sort_index()

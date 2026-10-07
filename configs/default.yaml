@@ -6,6 +6,9 @@ data:
   metadata_file: "label.csv"          # or null to auto-discover
   splits_csv: "results/splits.csv"
   image_size: 224
+  group_col: "patient_id"
+  num_workers: 4
+  split_ratios: {train: 0.60, val: 0.10, calib: 0.15, test: 0.15}
 
 # ── Experiment ─────────────────────────────────────────────────────────
 experiment:
@@ -84,6 +87,9 @@ output:
 uncertainty:
   alpha: 0.10
   alpha_sweep: [0.05, 0.10, 0.20]
+  score: "lac"                    # "lac" or "aps"
+  rare_class_policy: "global"     # "global" (disclosed fallback) or "inf" (always include class)
+  temperature_fit_split: "val"    # "val" or "calib"
   mc_dropout_samples: 30
   min_calibration_per_class: 10
   ece_n_bins: 15

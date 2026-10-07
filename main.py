@@ -14,7 +14,28 @@ import json
 from utils.logger import setup_logger
 from utils.reproducibility import setup_reproducibility
 from utils.checkpoint import load_checkpoint
-from data.splits import create_patient_level_splits, load_splits, create_kfold_splits
+import shutil
+from data.splits import (create_patient_level_splits, load_splits, create_kfold_splits,
+                         save_split_manifest, SPLIT_NAMES)
+
+def archive_legacy_splits(path: Path) -> bool:
+    if not path.exists() or set(pd.read_csv(path)["split"].unique()) == set(SPLIT_NAMES):
+        return False
+    dest = path.with_name("splits_legacy_3way.csv")
+    if dest.exists():
+        raise RuntimeError(f"{dest} already exists; move it manually.")
+    shutil.move(str(path), str(dest))
+    return True
+
+def discover_trained_models(config) -> dict:
+    found = {}
+    ck = Path(config.output.checkpoints_dir)
+    for m in config.training.models_to_train:
+        swa, best = ck / f"{config.experiment.run_name}_{m}_swa.pt", ck / f"{config.experiment.run_name}_{m}_best.pt"
+        if swa.exists() or best.exists():
+            found[m] = str(swa if swa.exists() else best)
+    return found
+
 from data.dataset import get_dataloaders, compute_class_weights, MMOTUDataset
 from models.factory import get_model
 from training.trainer import Trainer
@@ -319,11 +340,12 @@ def main():
         # Stage 1: Data Preparation
         logger.info("Stage 1: Data Preparation")
 
-        regenerate_splits = False
-        if not Path(config.data.splits_csv).exists():
-            regenerate_splits = True
-        else:
-            # Check if existing splits match the debug/full intent
+        split_path = Path(config.data.splits_csv)
+        if archive_legacy_splits(split_path):
+            logger.warning("Legacy 3 way splits archived to splits_legacy_3way.csv; regenerating 4 way splits.")
+        regenerate_splits = not split_path.exists()
+        
+        if not regenerate_splits:
             existing_splits = pd.read_csv(config.data.splits_csv)
             if not args.debug and len(existing_splits) <= 100:
                 logger.info("Existing splits file looks like a debug subset. Regenerating for full run...")
@@ -340,22 +362,31 @@ def main():
                 # subset for debug
                 metadata = metadata.sample(min(100, len(metadata)), random_state=config.experiment.random_seed).reset_index(drop=True)
 
+            seed = config.experiment.random_seed
+            ratios = vars(config.data.split_ratios) if hasattr(config.data, 'split_ratios') else {"train": 0.60, "val": 0.10, "calib": 0.15, "test": 0.15}
+            group_col = getattr(config.data, "group_col", "patient_id")
+            strict = not args.debug
             if args.kfold or getattr(config.experiment, 'use_kfold', False):
                 n_splits = getattr(config.experiment, 'kfold_n_splits', 5)
                 logger.info(f"Generating {n_splits}-fold splits...")
-                fold_dfs = create_kfold_splits(metadata, n_splits=n_splits)
+                fold_dfs = create_kfold_splits(metadata, n_splits=n_splits, ratios=ratios,
+                                               random_state=seed, group_col=group_col, strict=strict)
                 for i, f_df in enumerate(fold_dfs):
                     f_df.to_csv(f"{config.output.results_dir}/splits_fold{i}.csv", index=False)
                 # Set default splits_csv to fold 0 for subsequent steps if not looping
                 splits_df = fold_dfs[0]
                 splits_df.to_csv(config.data.splits_csv, index=False)
             else:
-                splits_df = create_patient_level_splits(metadata)
+                splits_df = create_patient_level_splits(metadata, ratios=ratios, random_state=seed,
+                                                        group_col=group_col, strict=strict)
                 splits_df.to_csv(config.data.splits_csv, index=False)
+                
+            save_split_manifest(splits_df, Path(config.output.results_dir) / "split_manifest.json",
+                                seed, ratios, group_col)
             
-        train_df, val_df, test_df = load_splits(config.data.splits_csv)
+        train_df, val_df, calib_df, test_df = load_splits(config.data.splits_csv)
         class_weights = compute_class_weights(train_df)
-        logger.info(f"Train: {len(train_df)}, Val: {len(val_df)}, Test: {len(test_df)}")
+        logger.info(f"Train: {len(train_df)}, Val: {len(val_df)}, Calib: {len(calib_df)}, Test: {len(test_df)}")
         
         # Pre-compute wcis stats for normalization
         with open(Path(config.output.results_dir) / "wcis_normalization_stats.json", 'w') as f:
@@ -393,7 +424,7 @@ def main():
             else:
                 splits_path = config.data.splits_csv
                 
-            train_df, val_df, _ = load_splits(splits_path)
+            train_df, val_df, calib_df, _ = load_splits(splits_path)
             class_weights = compute_class_weights(train_df)
             
             for model_name in config.training.models_to_train:
@@ -414,7 +445,7 @@ def main():
                 config.training.use_mixup = getattr(config.training, 'use_mixup', True)
                 config.training.use_swa = getattr(config.training, 'use_swa', True)
                 
-                train_loader, val_loader, _ = get_dataloaders(splits_path, config)
+                train_loader, val_loader, _, _ = get_dataloaders(splits_path, config)
                 
                 trainer = Trainer(model, train_loader, val_loader, config.training, device, logger, config.output.checkpoints_dir, run_name, class_weights=class_weights)
                 
@@ -431,20 +462,17 @@ def main():
                 gc.collect()
             
     elif args.skip_training:
-        # Populate trained_models from existing files
-        for model_name in config.training.models_to_train:
-            ckpt_path = Path(config.output.checkpoints_dir) / f"{config.experiment.run_name}_{model_name}_best.pt"
-            if ckpt_path.exists():
-                trained_models[model_name] = str(ckpt_path)
-            else:
-                logger.warning(f"Skipped training but checkpoint not found for {model_name}: {ckpt_path}")
+        trained_models = discover_trained_models(config)
+        
+    if not trained_models:
+        trained_models = discover_trained_models(config)
 
     # ── Stage 3: XAI ──
     all_xai_results = {}
     if run_stage(3):
         logger.info("=" * 60)
         logger.info("Stage 3: XAI Generation")
-        _, _, test_df = load_splits(config.data.splits_csv)
+        _, _, _, test_df = load_splits(config.data.splits_csv)
         
         val_transform = transforms.Compose([
             transforms.Resize((config.data.image_size, config.data.image_size)),
@@ -476,12 +504,12 @@ def main():
             xai_runner = XAIRunner(model, trained_key, test_dataset_with_paths, config.xai, device, logger)
             
             if config.xai.run_shap:
-                train_df, _, _ = load_splits(config.data.splits_csv)
+                train_df, _, _, _ = load_splits(config.data.splits_csv)
                 bg_dataset = MMOTUDataset(train_df, transform=val_transform, mask_transform=mask_transform)
                 xai_runner.init_shap(bg_dataset)
                 
             results_df = xai_runner.run(output_dir=config.output.xai_results_dir)
-            all_xai_results[model_name] = results_df
+            all_xai_results[trained_key] = results_df
             
             torch.cuda.empty_cache()
             gc.collect()
@@ -493,7 +521,7 @@ def main():
         from evaluation.ensemble import build_ensemble_from_checkpoints
         from training.metrics import compute_classification_metrics
         
-        _, _, test_df = load_splits(config.data.splits_csv)
+        _, _, _, test_df = load_splits(config.data.splits_csv)
         val_transform = transforms.Compose([
             transforms.Resize((config.data.image_size, config.data.image_size)),
             transforms.ToTensor(),
@@ -549,7 +577,7 @@ def main():
             # Rebuild test_dataset_with_paths if not in scope (e.g. --stage 4 standalone run)
             if 'test_dataset_with_paths' not in dir():
                 from torchvision import transforms as _transforms
-                _, _, _test_df = load_splits(config.data.splits_csv)
+                _, _, _, _test_df = load_splits(config.data.splits_csv)
                 _val_transform = _transforms.Compose([
                     _transforms.Resize((config.data.image_size, config.data.image_size)),
                     _transforms.ToTensor(),
@@ -654,31 +682,12 @@ def main():
 
 
     # ── Stage 4.5: Uncertainty Quantification and Conformal Risk Control ──
-    if run_stage(4):
-        if not trained_models:
-            for model_name in config.training.models_to_train:
-                ckpt_path = Path(config.output.checkpoints_dir) / f"{config.experiment.run_name}_{model_name}_best.pt"
-                if ckpt_path.exists():
-                    trained_models[model_name] = str(ckpt_path)
-                else:
-                    logger.warning(f"Uncertainty stage checkpoint not found for {model_name}: {ckpt_path}")
-
-        if trained_models:
-            logger.info("=" * 60)
-            logger.info("Stage 4.5: Uncertainty Quantification and Conformal Risk Control")
-            
-            # We import it here so it doesn't clutter the top of your file
-            from uncertainty.run_uncertainty_pipeline import run_uncertainty_pipeline
-
-            uncertainty_df = run_uncertainty_pipeline(
-                trained_models=trained_models,
-                config=config,
-                device=device,
-                alpha=getattr(config.uncertainty, 'alpha', 0.10),
-                alpha_sweep=getattr(config.uncertainty, 'alpha_sweep', None),
-                logger=logger
-            )
-            logger.info(f"Uncertainty summary:\n{uncertainty_df.to_string()}")  
+    if run_stage(4) and trained_models:
+        logger.info("=" * 60)
+        logger.info("Stage 4.5: Uncertainty Quantification and Conformal Risk Control")
+        from uncertainty.run_uncertainty_pipeline import run_uncertainty_pipeline
+        uncertainty_df = run_uncertainty_pipeline(trained_models=trained_models, config=config, device=device)
+        logger.info(f"Uncertainty summary:\n{uncertainty_df.to_string()}")
     
     
     # ── Stage 5: Visualizations ──
