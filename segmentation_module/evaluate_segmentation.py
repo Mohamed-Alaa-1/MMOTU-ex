@@ -45,14 +45,17 @@ from segmentation_uncertainty.mc_dropout_segmentation import MCDropoutSegmentati
 from segmentation_uncertainty.ensemble_segmentation import DeepEnsembleSegmentationEstimator
 from segmentation_uncertainty.conformal_risk_control import SegmentationConformalRiskController
 from segmentation_uncertainty.selective_segmentation import selective_segmentation_risk_coverage, image_level_uncertainty
-from segmentation.metrics import dice_score, iou_score
+from segmentation.metrics import (
+    dice_score, iou_score,
+    boundary_f1_score, hausdorff_distance_95,
+)
 from segmentation.models.baselines import count_parameters
 
 
 def parse_args():
     p = argparse.ArgumentParser(description="Evaluate Uncertainty & Safety for Segmentation Models")
     p.add_argument(
-        "--checkpoints", nargs="+", required=True,
+        "--checkpoints", nargs="+", default=["results/checkpoints/segmentation/laura_small_best.pt"],
         help="Path(s) to model checkpoint(s). If multiple, a Deep Ensemble is used.",
     )
     p.add_argument(
@@ -220,14 +223,20 @@ def main():
     # 4. Standard vs Conformal Evaluation on Test Set
     print("\nEvaluating on Test Set...")
     # Per-image metric arrays
-    standard_dices  = []
-    conformal_dices = []
-    standard_ious   = []
-    conformal_ious  = []
-    standard_fnrs   = []
-    conformal_fnrs  = []
-    standard_precs  = []
-    conformal_precs = []
+    standard_dices   = []
+    conformal_dices  = []
+    standard_ious    = []
+    conformal_ious   = []
+    standard_fnrs    = []
+    conformal_fnrs   = []
+    standard_precs   = []
+    conformal_precs  = []
+    standard_recalls  = []
+    conformal_recalls = []
+    standard_bfs     = []
+    conformal_bfs    = []
+    standard_hd95s   = []
+    conformal_hd95s  = []
 
     test_prob_maps_list   = []
     test_uncertainty_list = []
@@ -247,31 +256,43 @@ def main():
         test_prob_maps_list.append(prob_maps)
         test_uncertainty_list.append(image_level_uncertainty(raw_est))
 
-        conf_preds = crc.predict(prob_maps)           # CRC threshold
+        conf_preds = crc.predict(prob_maps)            # CRC threshold
         std_preds  = (prob_maps >= 0.5).astype(np.uint8)  # standard 0.5
 
         for j in range(len(img_chunk)):
-            gt = mask_chunk[j, 0] >= 0.5
+            gt       = mask_chunk[j, 0] >= 0.5
+            std_pred = std_preds[j, 0].astype(bool)
+            conf_pred= conf_preds[j, 0].astype(bool)
 
             # Dice and IoU
-            standard_dices.append(dice_score(std_preds[j, 0],   gt))
-            conformal_dices.append(dice_score(conf_preds[j, 0], gt))
-            standard_ious.append(iou_score(std_preds[j, 0],   gt))
-            conformal_ious.append(iou_score(conf_preds[j, 0], gt))
+            standard_dices.append(dice_score(std_pred,   gt))
+            conformal_dices.append(dice_score(conf_pred, gt))
+            standard_ious.append(iou_score(std_pred,   gt))
+            conformal_ious.append(iou_score(conf_pred, gt))
+
+            # Boundary F1 (BF-Score) and HD95
+            standard_bfs.append(boundary_f1_score(std_pred,   gt))
+            conformal_bfs.append(boundary_f1_score(conf_pred, gt))
+            standard_hd95s.append(hausdorff_distance_95(std_pred,   gt))
+            conformal_hd95s.append(hausdorff_distance_95(conf_pred, gt))
 
             actual_pos = int(gt.sum())
             if actual_pos > 0:
                 # FNR = missed positives / actual positives
-                std_fn  = int((gt & ~std_preds[j, 0].astype(bool)).sum())
-                conf_fn = int((gt & ~conf_preds[j, 0].astype(bool)).sum())
+                std_fn  = int((gt & ~std_pred).sum())
+                conf_fn = int((gt & ~conf_pred).sum())
                 standard_fnrs.append(std_fn  / actual_pos)
                 conformal_fnrs.append(conf_fn / actual_pos)
 
+                # Recall = true positives / actual positives  (= 1 - FNR)
+                std_tp  = int((std_pred  & gt).sum())
+                conf_tp = int((conf_pred & gt).sum())
+                standard_recalls.append(std_tp  / actual_pos)
+                conformal_recalls.append(conf_tp / actual_pos)
+
                 # Precision = true positives / predicted positives
-                std_pred_pos  = int(std_preds[j, 0].sum())
-                conf_pred_pos = int(conf_preds[j, 0].sum())
-                std_tp  = int((std_preds[j, 0].astype(bool)  & gt).sum())
-                conf_tp = int((conf_preds[j, 0].astype(bool) & gt).sum())
+                std_pred_pos  = int(std_pred.sum())
+                conf_pred_pos = int(conf_pred.sum())
                 standard_precs.append(std_tp  / max(std_pred_pos,  1))
                 conformal_precs.append(conf_tp / max(conf_pred_pos, 1))
 
@@ -279,36 +300,70 @@ def main():
     fps = n_test_images / inference_time_s
 
     # --- Aggregated results with bootstrap CIs ---
-    standard_dices  = np.array(standard_dices)
-    conformal_dices = np.array(conformal_dices)
-    standard_ious   = np.array(standard_ious)
-    conformal_ious  = np.array(conformal_ious)
-    standard_fnrs   = np.array(standard_fnrs)
-    conformal_fnrs  = np.array(conformal_fnrs)
-    standard_precs  = np.array(standard_precs)
-    conformal_precs = np.array(conformal_precs)
+    standard_dices    = np.array(standard_dices)
+    conformal_dices   = np.array(conformal_dices)
+    standard_ious     = np.array(standard_ious)
+    conformal_ious    = np.array(conformal_ious)
+    standard_fnrs     = np.array(standard_fnrs)
+    conformal_fnrs    = np.array(conformal_fnrs)
+    standard_precs    = np.array(standard_precs)
+    conformal_precs   = np.array(conformal_precs)
+    standard_recalls  = np.array(standard_recalls)
+    conformal_recalls = np.array(conformal_recalls)
+    standard_bfs      = np.array(standard_bfs)
+    conformal_bfs     = np.array(conformal_bfs)
+    # Filter out NaN HD95 values (empty masks) before aggregating
+    standard_hd95s_clean  = np.array([v for v in standard_hd95s  if not np.isnan(v)])
+    conformal_hd95s_clean = np.array([v for v in conformal_hd95s if not np.isnan(v)])
 
-    mean_std_dice  = float(standard_dices.mean())
-    mean_conf_dice = float(conformal_dices.mean())
-    mean_conf_fnr  = float(conformal_fnrs.mean()) if len(conformal_fnrs) > 0 else float('nan')
-    mean_std_fnr   = float(standard_fnrs.mean())  if len(standard_fnrs)  > 0 else float('nan')
+    def _safe_mean(arr): return float(arr.mean()) if len(arr) > 0 else float('nan')
+    def _safe_ci(arr):   return bootstrap_metric_ci(arr) if len(arr) > 0 else (float('nan'), float('nan'))
 
-    ci_std_dice  = bootstrap_metric_ci(standard_dices)
-    ci_conf_dice = bootstrap_metric_ci(conformal_dices)
-    ci_std_iou   = bootstrap_metric_ci(standard_ious)
-    ci_conf_iou  = bootstrap_metric_ci(conformal_ious)
-    ci_std_fnr   = bootstrap_metric_ci(standard_fnrs)  if len(standard_fnrs)  > 0 else (float('nan'), float('nan'))
-    ci_conf_fnr  = bootstrap_metric_ci(conformal_fnrs) if len(conformal_fnrs) > 0 else (float('nan'), float('nan'))
+    mean_std_dice     = _safe_mean(standard_dices)
+    mean_conf_dice    = _safe_mean(conformal_dices)
+    mean_std_fnr      = _safe_mean(standard_fnrs)
+    mean_conf_fnr     = _safe_mean(conformal_fnrs)
+    mean_std_prec     = _safe_mean(standard_precs)
+    mean_conf_prec    = _safe_mean(conformal_precs)
+    mean_std_recall   = _safe_mean(standard_recalls)
+    mean_conf_recall  = _safe_mean(conformal_recalls)
+    mean_std_bf       = _safe_mean(standard_bfs)
+    mean_conf_bf      = _safe_mean(conformal_bfs)
+    mean_std_hd95     = _safe_mean(standard_hd95s_clean)
+    mean_conf_hd95    = _safe_mean(conformal_hd95s_clean)
+
+    ci_std_dice    = _safe_ci(standard_dices)
+    ci_conf_dice   = _safe_ci(conformal_dices)
+    ci_std_iou     = _safe_ci(standard_ious)
+    ci_conf_iou    = _safe_ci(conformal_ious)
+    ci_std_fnr     = _safe_ci(standard_fnrs)
+    ci_conf_fnr    = _safe_ci(conformal_fnrs)
+    ci_std_prec    = _safe_ci(standard_precs)
+    ci_conf_prec   = _safe_ci(conformal_precs)
+    ci_std_recall  = _safe_ci(standard_recalls)
+    ci_conf_recall = _safe_ci(conformal_recalls)
+    ci_std_bf      = _safe_ci(standard_bfs)
+    ci_conf_bf     = _safe_ci(conformal_bfs)
+    ci_std_hd95    = _safe_ci(standard_hd95s_clean)
+    ci_conf_hd95   = _safe_ci(conformal_hd95s_clean)
 
     print(f"\nTest Set Results:")
     print(f"  [Standard threshold = 0.5]")
-    print(f"    Dice    : {mean_std_dice:.4f}  95% CI [{ci_std_dice[0]:.4f}, {ci_std_dice[1]:.4f}]")
-    print(f"    IoU     : {standard_ious.mean():.4f}  95% CI [{ci_std_iou[0]:.4f}, {ci_std_iou[1]:.4f}]")
-    print(f"    FNR     : {mean_std_fnr:.4f}  95% CI [{ci_std_fnr[0]:.4f}, {ci_std_fnr[1]:.4f}]")
+    print(f"    Dice      : {mean_std_dice:.4f}  95% CI [{ci_std_dice[0]:.4f}, {ci_std_dice[1]:.4f}]")
+    print(f"    IoU       : {_safe_mean(standard_ious):.4f}  95% CI [{ci_std_iou[0]:.4f}, {ci_std_iou[1]:.4f}]")
+    print(f"    Precision : {mean_std_prec:.4f}  95% CI [{ci_std_prec[0]:.4f}, {ci_std_prec[1]:.4f}]")
+    print(f"    Recall    : {mean_std_recall:.4f}  95% CI [{ci_std_recall[0]:.4f}, {ci_std_recall[1]:.4f}]")
+    print(f"    FNR       : {mean_std_fnr:.4f}  95% CI [{ci_std_fnr[0]:.4f}, {ci_std_fnr[1]:.4f}]")
+    print(f"    BF-Score  : {mean_std_bf:.4f}  95% CI [{ci_std_bf[0]:.4f}, {ci_std_bf[1]:.4f}]")
+    print(f"    HD95      : {mean_std_hd95:.2f}px  95% CI [{ci_std_hd95[0]:.2f}, {ci_std_hd95[1]:.2f}]")
     print(f"  [CRC threshold = {calib_lambda:.4f}  (target FNR <= {args.alpha})]")
-    print(f"    Dice    : {mean_conf_dice:.4f}  95% CI [{ci_conf_dice[0]:.4f}, {ci_conf_dice[1]:.4f}]")
-    print(f"    IoU     : {conformal_ious.mean():.4f}  95% CI [{ci_conf_iou[0]:.4f}, {ci_conf_iou[1]:.4f}]")
-    print(f"    FNR     : {mean_conf_fnr:.4f}  95% CI [{ci_conf_fnr[0]:.4f}, {ci_conf_fnr[1]:.4f}]")
+    print(f"    Dice      : {mean_conf_dice:.4f}  95% CI [{ci_conf_dice[0]:.4f}, {ci_conf_dice[1]:.4f}]")
+    print(f"    IoU       : {_safe_mean(conformal_ious):.4f}  95% CI [{ci_conf_iou[0]:.4f}, {ci_conf_iou[1]:.4f}]")
+    print(f"    Precision : {mean_conf_prec:.4f}  95% CI [{ci_conf_prec[0]:.4f}, {ci_conf_prec[1]:.4f}]")
+    print(f"    Recall    : {mean_conf_recall:.4f}  95% CI [{ci_conf_recall[0]:.4f}, {ci_conf_recall[1]:.4f}]")
+    print(f"    FNR       : {mean_conf_fnr:.4f}  95% CI [{ci_conf_fnr[0]:.4f}, {ci_conf_fnr[1]:.4f}]")
+    print(f"    BF-Score  : {mean_conf_bf:.4f}  95% CI [{ci_conf_bf[0]:.4f}, {ci_conf_bf[1]:.4f}]")
+    print(f"    HD95      : {mean_conf_hd95:.2f}px  95% CI [{ci_conf_hd95[0]:.2f}, {ci_conf_hd95[1]:.2f}]")
     print(f"  Inference FPS: {fps:.1f}  ({inference_time_s:.1f}s for {n_test_images} images)")
     print(f"  Formal CRC guarantee valid (n>={30}): {crc_summary['formal_guarantee_valid']}")
 
@@ -355,22 +410,39 @@ def main():
         "conformal_calibrated_lambda": calib_lambda,
         "formal_guarantee_valid": crc_summary["formal_guarantee_valid"],
         "crc_note": crc_summary["note"],
-        # Standard threshold (0.5) metrics
+        # --- Standard threshold (0.5) metrics ---
         "val_fnr_at_05": crc_summary["calibration_fnr_at_05_threshold"],
-        "test_mean_standard_dice": float(mean_std_dice),
-        "test_mean_standard_dice_ci": list(ci_std_dice),
-        "test_mean_standard_iou": float(standard_ious.mean()),
-        "test_mean_standard_iou_ci": list(ci_std_iou),
-        "test_mean_standard_fnr": float(mean_std_fnr),
-        "test_mean_standard_fnr_ci": list(ci_std_fnr),
-        # CRC threshold metrics
+        "test_mean_standard_dice":          float(mean_std_dice),
+        "test_mean_standard_dice_ci":       list(ci_std_dice),
+        "test_mean_standard_iou":           float(_safe_mean(standard_ious)),
+        "test_mean_standard_iou_ci":        list(ci_std_iou),
+        "test_mean_standard_precision":     float(mean_std_prec),
+        "test_mean_standard_precision_ci":  list(ci_std_prec),
+        "test_mean_standard_recall":        float(mean_std_recall),
+        "test_mean_standard_recall_ci":     list(ci_std_recall),
+        "test_mean_standard_fnr":           float(mean_std_fnr),
+        "test_mean_standard_fnr_ci":        list(ci_std_fnr),
+        "test_mean_standard_bf_score":      float(mean_std_bf),
+        "test_mean_standard_bf_score_ci":   list(ci_std_bf),
+        "test_mean_standard_hd95_px":       float(mean_std_hd95),
+        "test_mean_standard_hd95_px_ci":    list(ci_std_hd95),
+        # --- CRC threshold metrics ---
         "val_fnr_at_crc": crc_summary["calibration_fnr_at_crc_threshold"],
-        "test_mean_conformal_dice": float(mean_conf_dice),
-        "test_mean_conformal_dice_ci": list(ci_conf_dice),
-        "test_mean_conformal_iou": float(conformal_ious.mean()),
-        "test_mean_conformal_iou_ci": list(ci_conf_iou),
-        "test_mean_conformal_fnr": float(mean_conf_fnr),
-        "test_mean_conformal_fnr_ci": list(ci_conf_fnr),
+        "test_mean_conformal_dice":         float(mean_conf_dice),
+        "test_mean_conformal_dice_ci":      list(ci_conf_dice),
+        "test_mean_conformal_iou":          float(_safe_mean(conformal_ious)),
+        "test_mean_conformal_iou_ci":       list(ci_conf_iou),
+        "test_mean_conformal_precision":    float(mean_conf_prec),
+        "test_mean_conformal_precision_ci": list(ci_conf_prec),
+        "test_mean_conformal_recall":       float(mean_conf_recall),
+        "test_mean_conformal_recall_ci":    list(ci_conf_recall),
+        "test_mean_conformal_fnr":          float(mean_conf_fnr),
+        "test_mean_conformal_fnr_ci":       list(ci_conf_fnr),
+        "test_mean_conformal_bf_score":     float(mean_conf_bf),
+        "test_mean_conformal_bf_score_ci":  list(ci_conf_bf),
+        "test_mean_conformal_hd95_px":      float(mean_conf_hd95),
+        "test_mean_conformal_hd95_px_ci":   list(ci_conf_hd95),
+        # --- Uncertainty / Selective ---
         "test_aurc": float(aurc_value),
     }
     

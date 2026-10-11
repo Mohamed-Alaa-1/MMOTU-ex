@@ -1,0 +1,9 @@
+{
+    "best_epoch": 41,
+    "best_val_macro_f1": 0.6757734912146677,
+    "best_val_top1_acc": 0.7346938775510204,
+    "best_val_top2_acc": 0.8367347121238708,
+    "best_val_balanced_acc": 0.6950782333135275,
+    "run_name": "exp_003_mobilenet_v3_large",
+    "timestamp": "2026-10-11 14:14:07"
+}

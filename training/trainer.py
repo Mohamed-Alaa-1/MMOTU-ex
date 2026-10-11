@@ -84,7 +84,7 @@ class Trainer:
             self.criterion = FocalLoss(gamma=config.focal_gamma, alpha=cw, label_smoothing=config.label_smoothing)
             
         # Scaler
-        self.scaler = torch.cuda.amp.GradScaler(enabled=config.use_amp and self.device.type == 'cuda')
+        self.scaler = torch.amp.GradScaler("cuda", enabled=config.use_amp and self.device.type == 'cuda')
         
         # Monitors
         # We assume gradient config is passed via a unified config or config.gradient in main, but let's access it directly if passed.
@@ -151,7 +151,7 @@ class Trainer:
             
             self.optimizer.zero_grad()
             
-            with torch.cuda.amp.autocast(enabled=self.scaler.is_enabled()):
+            with torch.amp.autocast("cuda", enabled=self.scaler.is_enabled()):
                 logits = self.model(images)
                 
                 if torch.isnan(logits).any():
@@ -215,7 +215,7 @@ class Trainer:
                 images = images.to(self.device)
                 labels = labels.to(self.device)
                 
-                with torch.cuda.amp.autocast(enabled=self.scaler.is_enabled()):
+                with torch.amp.autocast("cuda", enabled=self.scaler.is_enabled()):
                     logits = self.model(images)
                     loss = self.criterion(logits, labels)
                     

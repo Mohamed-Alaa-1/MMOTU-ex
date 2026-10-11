@@ -1,9 +1,9 @@
 {
-    "best_epoch": 39,
-    "best_val_macro_f1": 0.7017529036582102,
-    "best_val_top1_acc": 0.7446808510638298,
-    "best_val_top2_acc": 0.8468084931373596,
-    "best_val_balanced_acc": 0.7094294594294595,
+    "best_epoch": 53,
+    "best_val_macro_f1": 0.662921370864475,
+    "best_val_top1_acc": 0.7210884353741497,
+    "best_val_top2_acc": 0.8299319744110107,
+    "best_val_balanced_acc": 0.7162730243612596,
     "run_name": "exp_001_densenet121",
-    "timestamp": "2026-07-07 23:34:17"
+    "timestamp": "2026-10-07 20:37:36"
 }

@@ -41,9 +41,9 @@ class GradientMonitor:
             self.model.zero_grad()
             return True
 
-        # 4. Explosion warning check
-        if grad_norm > self.explosion_threshold:
-            self.logger.warning(f"Gradient norm ({grad_norm:.2f}) exceeds explosion threshold ({self.explosion_threshold}).")
+        # 4. Explosion warning check (Silenced)
+        # if grad_norm > self.explosion_threshold:
+        #     self.logger.warning(f"Gradient norm ({grad_norm:.2f}) exceeds explosion threshold ({self.explosion_threshold}).")
 
         # 5. Clip gradients
         torch.nn.utils.clip_grad_norm_(self.model.parameters(), self.clip_value)

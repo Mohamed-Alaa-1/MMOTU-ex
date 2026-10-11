@@ -1,0 +1,9 @@
+{
+    "best_epoch": 31,
+    "best_val_macro_f1": 0.6890424235843651,
+    "best_val_top1_acc": 0.7414965986394558,
+    "best_val_top2_acc": 0.884353756904602,
+    "best_val_balanced_acc": 0.7136660724896019,
+    "run_name": "exp_003_resnet50",
+    "timestamp": "2026-10-11 13:47:16"
+}

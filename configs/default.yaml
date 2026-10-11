@@ -12,7 +12,7 @@ data:
 
 # ── Experiment ─────────────────────────────────────────────────────────
 experiment:
-  run_name: "exp_001"
+  run_name: "exp_003"
   random_seed: 42
   device: "auto"                        # "auto", "cuda", "cpu"
   use_amp: true                         # Mixed precision training

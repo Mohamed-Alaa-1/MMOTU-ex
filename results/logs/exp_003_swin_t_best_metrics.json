@@ -1,0 +1,9 @@
+{
+    "best_epoch": 36,
+    "best_val_macro_f1": 0.7268728515698175,
+    "best_val_top1_acc": 0.7755102040816326,
+    "best_val_top2_acc": 0.8707482814788818,
+    "best_val_balanced_acc": 0.7459199841552783,
+    "run_name": "exp_003_swin_t",
+    "timestamp": "2026-10-11 14:25:23"
+}

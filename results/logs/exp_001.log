@@ -7654,3 +7654,536 @@
 2026-08-17 13:38:35 - exp_001 - INFO - ============================================================
 2026-08-17 13:38:35 - exp_001 - INFO - Stage 6: Summary Report
 2026-08-17 13:38:35 - exp_001 - INFO - === Pipeline complete ===
+2026-10-07 20:24:16 - exp_001 - INFO - ============================================================
+2026-10-07 20:24:16 - exp_001 - INFO - Run: exp_001 | Device: cuda | Debug: False
+2026-10-07 20:24:16 - exp_001 - INFO - Stage 1: Data Preparation
+2026-10-07 20:24:16 - exp_001 - WARNING - Legacy 3 way splits archived to splits_legacy_3way.csv; regenerating 4 way splits.
+2026-10-07 20:24:16 - exp_001 - INFO - Creating patient-level splits...
+2026-10-07 20:24:16 - exp_001 - INFO - Train: 882, Val: 147, Calib: 220, Test: 220
+2026-10-07 20:24:16 - exp_001 - INFO - Computing ExBale anchors...
+2026-10-07 20:24:18 - exp_001 - INFO - ExBale anchors saved: {'random_mean': 0.30863377319099433, 'random_std': 0.08537991350613575, 'perfect_mean': 0.9999999966666668, 'perfect_std': 1.1102230246251565e-16}
+2026-10-07 20:24:18 - exp_001 - INFO - === Pipeline complete ===
+2026-10-07 20:24:28 - exp_001 - INFO - ============================================================
+2026-10-07 20:24:28 - exp_001 - INFO - Run: exp_001 | Device: cuda | Debug: False
+2026-10-07 20:24:28 - exp_001 - INFO - ============================================================
+2026-10-07 20:24:28 - exp_001 - INFO - Stage 2: Training
+2026-10-07 20:24:28 - exp_001 - INFO - === Training densenet121 (Fold 0) ===
+2026-10-07 20:24:45 - exp_001 - INFO - Epoch 0/60 - Time: 16.4s - Train Loss: 2.3598 - Val Loss: 2.2715 - Val F1: 0.0900
+2026-10-07 20:24:58 - exp_001 - INFO - Epoch 1/60 - Time: 12.0s - Train Loss: 2.2962 - Val Loss: 2.1533 - Val F1: 0.1632
+2026-10-07 20:25:09 - exp_001 - INFO - Epoch 2/60 - Time: 11.2s - Train Loss: 2.1281 - Val Loss: 2.0639 - Val F1: 0.2694
+2026-10-07 20:25:20 - exp_001 - INFO - Epoch 3/60 - Time: 10.7s - Train Loss: 1.9985 - Val Loss: 1.9878 - Val F1: 0.3211
+2026-10-07 20:25:32 - exp_001 - INFO - Epoch 4/60 - Time: 11.2s - Train Loss: 1.8883 - Val Loss: 1.9852 - Val F1: 0.3369
+2026-10-07 20:25:35 - exp_001 - WARNING - Gradient norm (16.30) exceeds explosion threshold (10.0).
+2026-10-07 20:25:36 - exp_001 - WARNING - NaN/Inf detected in gradients. Skipping batch.
+2026-10-07 20:25:36 - exp_001 - WARNING - Gradient norm (18.50) exceeds explosion threshold (10.0).
+2026-10-07 20:25:36 - exp_001 - WARNING - Gradient norm (15.59) exceeds explosion threshold (10.0).
+2026-10-07 20:25:37 - exp_001 - WARNING - Gradient norm (16.11) exceeds explosion threshold (10.0).
+2026-10-07 20:25:37 - exp_001 - WARNING - Gradient norm (14.87) exceeds explosion threshold (10.0).
+2026-10-07 20:25:38 - exp_001 - WARNING - NaN/Inf detected in gradients. Skipping batch.
+2026-10-07 20:25:38 - exp_001 - WARNING - Gradient norm (15.15) exceeds explosion threshold (10.0).
+2026-10-07 20:25:39 - exp_001 - WARNING - Gradient norm (18.33) exceeds explosion threshold (10.0).
+2026-10-07 20:25:40 - exp_001 - WARNING - Gradient norm (13.95) exceeds explosion threshold (10.0).
+2026-10-07 20:25:40 - exp_001 - WARNING - Gradient norm (15.85) exceeds explosion threshold (10.0).
+2026-10-07 20:25:40 - exp_001 - WARNING - Gradient norm (17.15) exceeds explosion threshold (10.0).
+2026-10-07 20:25:41 - exp_001 - WARNING - Gradient norm (18.68) exceeds explosion threshold (10.0).
+2026-10-07 20:25:41 - exp_001 - WARNING - Gradient norm (17.29) exceeds explosion threshold (10.0).
+2026-10-07 20:25:42 - exp_001 - WARNING - Gradient norm (14.31) exceeds explosion threshold (10.0).
+2026-10-07 20:25:42 - exp_001 - WARNING - Gradient norm (15.89) exceeds explosion threshold (10.0).
+2026-10-07 20:25:43 - exp_001 - WARNING - Gradient norm (16.83) exceeds explosion threshold (10.0).
+2026-10-07 20:25:43 - exp_001 - WARNING - Gradient norm (18.77) exceeds explosion threshold (10.0).
+2026-10-07 20:25:44 - exp_001 - WARNING - Gradient norm (17.66) exceeds explosion threshold (10.0).
+2026-10-07 20:25:44 - exp_001 - WARNING - Gradient norm (15.95) exceeds explosion threshold (10.0).
+2026-10-07 20:25:45 - exp_001 - WARNING - Gradient norm (16.32) exceeds explosion threshold (10.0).
+2026-10-07 20:25:45 - exp_001 - WARNING - Gradient norm (15.15) exceeds explosion threshold (10.0).
+2026-10-07 20:25:45 - exp_001 - WARNING - Gradient norm (14.18) exceeds explosion threshold (10.0).
+2026-10-07 20:25:45 - exp_001 - WARNING - Gradient norm (14.63) exceeds explosion threshold (10.0).
+2026-10-07 20:25:46 - exp_001 - WARNING - Gradient norm (18.18) exceeds explosion threshold (10.0).
+2026-10-07 20:25:46 - exp_001 - WARNING - Gradient norm (18.63) exceeds explosion threshold (10.0).
+2026-10-07 20:25:46 - exp_001 - WARNING - Gradient norm (18.98) exceeds explosion threshold (10.0).
+2026-10-07 20:25:46 - exp_001 - WARNING - Epoch 5: skipped 2/27 batches
+2026-10-07 20:25:48 - exp_001 - INFO - Epoch 5/60 - Time: 15.6s - Train Loss: 2.0163 - Val Loss: 1.9311 - Val F1: 0.3040
+2026-10-07 20:25:50 - exp_001 - WARNING - Gradient norm (15.27) exceeds explosion threshold (10.0).
+2026-10-07 20:25:51 - exp_001 - WARNING - Gradient norm (13.60) exceeds explosion threshold (10.0).
+2026-10-07 20:25:51 - exp_001 - WARNING - Gradient norm (16.73) exceeds explosion threshold (10.0).
+2026-10-07 20:25:52 - exp_001 - WARNING - Gradient norm (15.97) exceeds explosion threshold (10.0).
+2026-10-07 20:25:53 - exp_001 - WARNING - Gradient norm (15.75) exceeds explosion threshold (10.0).
+2026-10-07 20:25:53 - exp_001 - WARNING - Gradient norm (14.46) exceeds explosion threshold (10.0).
+2026-10-07 20:25:54 - exp_001 - WARNING - Gradient norm (13.15) exceeds explosion threshold (10.0).
+2026-10-07 20:25:54 - exp_001 - WARNING - Gradient norm (11.82) exceeds explosion threshold (10.0).
+2026-10-07 20:25:55 - exp_001 - WARNING - Gradient norm (15.00) exceeds explosion threshold (10.0).
+2026-10-07 20:25:55 - exp_001 - WARNING - Gradient norm (14.74) exceeds explosion threshold (10.0).
+2026-10-07 20:25:55 - exp_001 - WARNING - Gradient norm (13.80) exceeds explosion threshold (10.0).
+2026-10-07 20:25:56 - exp_001 - WARNING - Gradient norm (14.09) exceeds explosion threshold (10.0).
+2026-10-07 20:25:56 - exp_001 - WARNING - Gradient norm (12.23) exceeds explosion threshold (10.0).
+2026-10-07 20:25:57 - exp_001 - WARNING - Gradient norm (15.56) exceeds explosion threshold (10.0).
+2026-10-07 20:25:57 - exp_001 - WARNING - Gradient norm (12.31) exceeds explosion threshold (10.0).
+2026-10-07 20:25:58 - exp_001 - WARNING - Gradient norm (12.96) exceeds explosion threshold (10.0).
+2026-10-07 20:25:58 - exp_001 - WARNING - Gradient norm (15.07) exceeds explosion threshold (10.0).
+2026-10-07 20:25:59 - exp_001 - WARNING - Gradient norm (14.02) exceeds explosion threshold (10.0).
+2026-10-07 20:25:59 - exp_001 - WARNING - Gradient norm (14.38) exceeds explosion threshold (10.0).
+2026-10-07 20:26:00 - exp_001 - WARNING - Gradient norm (16.18) exceeds explosion threshold (10.0).
+2026-10-07 20:26:00 - exp_001 - WARNING - Gradient norm (13.31) exceeds explosion threshold (10.0).
+2026-10-07 20:26:00 - exp_001 - WARNING - Gradient norm (13.65) exceeds explosion threshold (10.0).
+2026-10-07 20:26:00 - exp_001 - WARNING - Gradient norm (13.59) exceeds explosion threshold (10.0).
+2026-10-07 20:26:01 - exp_001 - WARNING - Gradient norm (12.06) exceeds explosion threshold (10.0).
+2026-10-07 20:26:01 - exp_001 - WARNING - Gradient norm (12.17) exceeds explosion threshold (10.0).
+2026-10-07 20:26:01 - exp_001 - WARNING - Gradient norm (13.46) exceeds explosion threshold (10.0).
+2026-10-07 20:26:02 - exp_001 - WARNING - Gradient norm (13.83) exceeds explosion threshold (10.0).
+2026-10-07 20:26:03 - exp_001 - INFO - Epoch 6/60 - Time: 14.7s - Train Loss: 1.9681 - Val Loss: 1.8126 - Val F1: 0.4028
+2026-10-07 20:26:06 - exp_001 - WARNING - Gradient norm (11.52) exceeds explosion threshold (10.0).
+2026-10-07 20:26:06 - exp_001 - WARNING - Gradient norm (12.74) exceeds explosion threshold (10.0).
+2026-10-07 20:26:07 - exp_001 - WARNING - Gradient norm (14.31) exceeds explosion threshold (10.0).
+2026-10-07 20:26:07 - exp_001 - WARNING - Gradient norm (12.40) exceeds explosion threshold (10.0).
+2026-10-07 20:26:08 - exp_001 - WARNING - Gradient norm (11.23) exceeds explosion threshold (10.0).
+2026-10-07 20:26:09 - exp_001 - WARNING - Gradient norm (14.26) exceeds explosion threshold (10.0).
+2026-10-07 20:26:10 - exp_001 - WARNING - Gradient norm (13.03) exceeds explosion threshold (10.0).
+2026-10-07 20:26:10 - exp_001 - WARNING - Gradient norm (12.43) exceeds explosion threshold (10.0).
+2026-10-07 20:26:10 - exp_001 - WARNING - Gradient norm (14.88) exceeds explosion threshold (10.0).
+2026-10-07 20:26:11 - exp_001 - WARNING - Gradient norm (11.93) exceeds explosion threshold (10.0).
+2026-10-07 20:26:11 - exp_001 - WARNING - Gradient norm (12.02) exceeds explosion threshold (10.0).
+2026-10-07 20:26:12 - exp_001 - WARNING - Gradient norm (15.62) exceeds explosion threshold (10.0).
+2026-10-07 20:26:12 - exp_001 - WARNING - Gradient norm (12.26) exceeds explosion threshold (10.0).
+2026-10-07 20:26:13 - exp_001 - WARNING - Gradient norm (12.52) exceeds explosion threshold (10.0).
+2026-10-07 20:26:13 - exp_001 - WARNING - Gradient norm (13.99) exceeds explosion threshold (10.0).
+2026-10-07 20:26:14 - exp_001 - WARNING - Gradient norm (12.13) exceeds explosion threshold (10.0).
+2026-10-07 20:26:14 - exp_001 - WARNING - Gradient norm (12.97) exceeds explosion threshold (10.0).
+2026-10-07 20:26:15 - exp_001 - WARNING - Gradient norm (11.57) exceeds explosion threshold (10.0).
+2026-10-07 20:26:15 - exp_001 - WARNING - Gradient norm (11.84) exceeds explosion threshold (10.0).
+2026-10-07 20:26:15 - exp_001 - WARNING - Gradient norm (15.74) exceeds explosion threshold (10.0).
+2026-10-07 20:26:16 - exp_001 - WARNING - Gradient norm (14.00) exceeds explosion threshold (10.0).
+2026-10-07 20:26:16 - exp_001 - WARNING - Gradient norm (10.54) exceeds explosion threshold (10.0).
+2026-10-07 20:26:16 - exp_001 - WARNING - Gradient norm (12.36) exceeds explosion threshold (10.0).
+2026-10-07 20:26:17 - exp_001 - WARNING - Gradient norm (15.69) exceeds explosion threshold (10.0).
+2026-10-07 20:26:17 - exp_001 - WARNING - Gradient norm (11.28) exceeds explosion threshold (10.0).
+2026-10-07 20:26:17 - exp_001 - WARNING - Gradient norm (13.19) exceeds explosion threshold (10.0).
+2026-10-07 20:26:17 - exp_001 - WARNING - Gradient norm (14.00) exceeds explosion threshold (10.0).
+2026-10-07 20:26:19 - exp_001 - INFO - Epoch 7/60 - Time: 15.2s - Train Loss: 1.8931 - Val Loss: 1.7777 - Val F1: 0.4188
+2026-10-07 20:26:22 - exp_001 - WARNING - Gradient norm (11.04) exceeds explosion threshold (10.0).
+2026-10-07 20:26:23 - exp_001 - WARNING - Gradient norm (10.76) exceeds explosion threshold (10.0).
+2026-10-07 20:26:23 - exp_001 - WARNING - Gradient norm (10.73) exceeds explosion threshold (10.0).
+2026-10-07 20:26:24 - exp_001 - WARNING - Gradient norm (11.62) exceeds explosion threshold (10.0).
+2026-10-07 20:26:24 - exp_001 - WARNING - Gradient norm (10.56) exceeds explosion threshold (10.0).
+2026-10-07 20:26:25 - exp_001 - WARNING - Gradient norm (13.59) exceeds explosion threshold (10.0).
+2026-10-07 20:26:25 - exp_001 - WARNING - Gradient norm (15.18) exceeds explosion threshold (10.0).
+2026-10-07 20:26:26 - exp_001 - WARNING - Gradient norm (11.55) exceeds explosion threshold (10.0).
+2026-10-07 20:26:26 - exp_001 - WARNING - Gradient norm (13.94) exceeds explosion threshold (10.0).
+2026-10-07 20:26:27 - exp_001 - WARNING - Gradient norm (11.04) exceeds explosion threshold (10.0).
+2026-10-07 20:26:27 - exp_001 - WARNING - Gradient norm (11.82) exceeds explosion threshold (10.0).
+2026-10-07 20:26:28 - exp_001 - WARNING - Gradient norm (12.39) exceeds explosion threshold (10.0).
+2026-10-07 20:26:28 - exp_001 - WARNING - Gradient norm (10.48) exceeds explosion threshold (10.0).
+2026-10-07 20:26:29 - exp_001 - WARNING - Gradient norm (11.78) exceeds explosion threshold (10.0).
+2026-10-07 20:26:29 - exp_001 - WARNING - Gradient norm (11.57) exceeds explosion threshold (10.0).
+2026-10-07 20:26:30 - exp_001 - WARNING - Gradient norm (16.09) exceeds explosion threshold (10.0).
+2026-10-07 20:26:30 - exp_001 - WARNING - Gradient norm (10.77) exceeds explosion threshold (10.0).
+2026-10-07 20:26:31 - exp_001 - WARNING - Gradient norm (10.45) exceeds explosion threshold (10.0).
+2026-10-07 20:26:31 - exp_001 - WARNING - Gradient norm (12.63) exceeds explosion threshold (10.0).
+2026-10-07 20:26:31 - exp_001 - WARNING - Gradient norm (11.30) exceeds explosion threshold (10.0).
+2026-10-07 20:26:32 - exp_001 - WARNING - Gradient norm (13.65) exceeds explosion threshold (10.0).
+2026-10-07 20:26:32 - exp_001 - WARNING - Gradient norm (12.06) exceeds explosion threshold (10.0).
+2026-10-07 20:26:32 - exp_001 - WARNING - Gradient norm (13.37) exceeds explosion threshold (10.0).
+2026-10-07 20:26:32 - exp_001 - WARNING - Gradient norm (11.78) exceeds explosion threshold (10.0).
+2026-10-07 20:26:33 - exp_001 - WARNING - Gradient norm (10.48) exceeds explosion threshold (10.0).
+2026-10-07 20:26:33 - exp_001 - WARNING - Gradient norm (15.70) exceeds explosion threshold (10.0).
+2026-10-07 20:26:35 - exp_001 - INFO - Epoch 8/60 - Time: 14.9s - Train Loss: 1.7131 - Val Loss: 1.7479 - Val F1: 0.4515
+2026-10-07 20:26:38 - exp_001 - WARNING - Gradient norm (12.44) exceeds explosion threshold (10.0).
+2026-10-07 20:26:38 - exp_001 - WARNING - Gradient norm (11.00) exceeds explosion threshold (10.0).
+2026-10-07 20:26:40 - exp_001 - WARNING - Gradient norm (10.91) exceeds explosion threshold (10.0).
+2026-10-07 20:26:40 - exp_001 - WARNING - Gradient norm (10.99) exceeds explosion threshold (10.0).
+2026-10-07 20:26:41 - exp_001 - WARNING - Gradient norm (12.49) exceeds explosion threshold (10.0).
+2026-10-07 20:26:42 - exp_001 - WARNING - Gradient norm (13.42) exceeds explosion threshold (10.0).
+2026-10-07 20:26:42 - exp_001 - WARNING - Gradient norm (11.44) exceeds explosion threshold (10.0).
+2026-10-07 20:26:43 - exp_001 - WARNING - Gradient norm (14.12) exceeds explosion threshold (10.0).
+2026-10-07 20:26:43 - exp_001 - WARNING - Gradient norm (14.09) exceeds explosion threshold (10.0).
+2026-10-07 20:26:44 - exp_001 - WARNING - Gradient norm (11.09) exceeds explosion threshold (10.0).
+2026-10-07 20:26:45 - exp_001 - WARNING - Gradient norm (11.99) exceeds explosion threshold (10.0).
+2026-10-07 20:26:45 - exp_001 - WARNING - Gradient norm (12.25) exceeds explosion threshold (10.0).
+2026-10-07 20:26:45 - exp_001 - WARNING - Gradient norm (13.74) exceeds explosion threshold (10.0).
+2026-10-07 20:26:46 - exp_001 - WARNING - Gradient norm (12.38) exceeds explosion threshold (10.0).
+2026-10-07 20:26:46 - exp_001 - WARNING - Gradient norm (10.64) exceeds explosion threshold (10.0).
+2026-10-07 20:26:47 - exp_001 - WARNING - Gradient norm (10.82) exceeds explosion threshold (10.0).
+2026-10-07 20:26:47 - exp_001 - WARNING - Gradient norm (11.76) exceeds explosion threshold (10.0).
+2026-10-07 20:26:47 - exp_001 - WARNING - Gradient norm (11.60) exceeds explosion threshold (10.0).
+2026-10-07 20:26:48 - exp_001 - WARNING - Gradient norm (13.00) exceeds explosion threshold (10.0).
+2026-10-07 20:26:48 - exp_001 - WARNING - Gradient norm (13.04) exceeds explosion threshold (10.0).
+2026-10-07 20:26:48 - exp_001 - WARNING - Gradient norm (12.48) exceeds explosion threshold (10.0).
+2026-10-07 20:26:50 - exp_001 - INFO - Epoch 9/60 - Time: 14.8s - Train Loss: 1.7520 - Val Loss: 1.7114 - Val F1: 0.4413
+2026-10-07 20:26:52 - exp_001 - WARNING - Gradient norm (11.55) exceeds explosion threshold (10.0).
+2026-10-07 20:26:53 - exp_001 - WARNING - Gradient norm (12.25) exceeds explosion threshold (10.0).
+2026-10-07 20:26:53 - exp_001 - WARNING - Gradient norm (12.27) exceeds explosion threshold (10.0).
+2026-10-07 20:26:54 - exp_001 - WARNING - Gradient norm (10.84) exceeds explosion threshold (10.0).
+2026-10-07 20:26:55 - exp_001 - WARNING - Gradient norm (11.73) exceeds explosion threshold (10.0).
+2026-10-07 20:26:56 - exp_001 - WARNING - Gradient norm (13.39) exceeds explosion threshold (10.0).
+2026-10-07 20:26:56 - exp_001 - WARNING - Gradient norm (11.29) exceeds explosion threshold (10.0).
+2026-10-07 20:26:57 - exp_001 - WARNING - Gradient norm (10.68) exceeds explosion threshold (10.0).
+2026-10-07 20:26:57 - exp_001 - WARNING - Gradient norm (13.28) exceeds explosion threshold (10.0).
+2026-10-07 20:26:58 - exp_001 - WARNING - Gradient norm (14.80) exceeds explosion threshold (10.0).
+2026-10-07 20:26:59 - exp_001 - WARNING - Gradient norm (14.56) exceeds explosion threshold (10.0).
+2026-10-07 20:27:00 - exp_001 - WARNING - Gradient norm (11.77) exceeds explosion threshold (10.0).
+2026-10-07 20:27:01 - exp_001 - WARNING - Gradient norm (10.15) exceeds explosion threshold (10.0).
+2026-10-07 20:27:01 - exp_001 - WARNING - Gradient norm (11.12) exceeds explosion threshold (10.0).
+2026-10-07 20:27:01 - exp_001 - WARNING - Gradient norm (13.29) exceeds explosion threshold (10.0).
+2026-10-07 20:27:02 - exp_001 - WARNING - Gradient norm (11.50) exceeds explosion threshold (10.0).
+2026-10-07 20:27:02 - exp_001 - WARNING - Gradient norm (11.93) exceeds explosion threshold (10.0).
+2026-10-07 20:27:02 - exp_001 - WARNING - Gradient norm (10.62) exceeds explosion threshold (10.0).
+2026-10-07 20:27:03 - exp_001 - WARNING - Gradient norm (11.09) exceeds explosion threshold (10.0).
+2026-10-07 20:27:03 - exp_001 - WARNING - Gradient norm (10.86) exceeds explosion threshold (10.0).
+2026-10-07 20:27:04 - exp_001 - WARNING - Gradient norm (13.88) exceeds explosion threshold (10.0).
+2026-10-07 20:27:04 - exp_001 - WARNING - Gradient norm (14.45) exceeds explosion threshold (10.0).
+2026-10-07 20:27:06 - exp_001 - INFO - Epoch 10/60 - Time: 15.2s - Train Loss: 1.6847 - Val Loss: 1.7532 - Val F1: 0.4498
+2026-10-07 20:27:08 - exp_001 - WARNING - Gradient norm (12.17) exceeds explosion threshold (10.0).
+2026-10-07 20:27:09 - exp_001 - WARNING - Gradient norm (10.23) exceeds explosion threshold (10.0).
+2026-10-07 20:27:10 - exp_001 - WARNING - Gradient norm (12.04) exceeds explosion threshold (10.0).
+2026-10-07 20:27:10 - exp_001 - WARNING - Gradient norm (11.59) exceeds explosion threshold (10.0).
+2026-10-07 20:27:11 - exp_001 - WARNING - Gradient norm (10.00) exceeds explosion threshold (10.0).
+2026-10-07 20:27:12 - exp_001 - WARNING - Gradient norm (10.70) exceeds explosion threshold (10.0).
+2026-10-07 20:27:12 - exp_001 - WARNING - Gradient norm (11.30) exceeds explosion threshold (10.0).
+2026-10-07 20:27:13 - exp_001 - WARNING - Gradient norm (10.84) exceeds explosion threshold (10.0).
+2026-10-07 20:27:13 - exp_001 - WARNING - Gradient norm (10.44) exceeds explosion threshold (10.0).
+2026-10-07 20:27:14 - exp_001 - WARNING - Gradient norm (11.90) exceeds explosion threshold (10.0).
+2026-10-07 20:27:15 - exp_001 - WARNING - Gradient norm (11.86) exceeds explosion threshold (10.0).
+2026-10-07 20:27:16 - exp_001 - WARNING - Gradient norm (11.29) exceeds explosion threshold (10.0).
+2026-10-07 20:27:16 - exp_001 - WARNING - Gradient norm (11.25) exceeds explosion threshold (10.0).
+2026-10-07 20:27:16 - exp_001 - WARNING - Gradient norm (11.81) exceeds explosion threshold (10.0).
+2026-10-07 20:27:17 - exp_001 - WARNING - Gradient norm (12.70) exceeds explosion threshold (10.0).
+2026-10-07 20:27:17 - exp_001 - WARNING - Gradient norm (10.49) exceeds explosion threshold (10.0).
+2026-10-07 20:27:19 - exp_001 - WARNING - Gradient norm (12.38) exceeds explosion threshold (10.0).
+2026-10-07 20:27:19 - exp_001 - WARNING - Gradient norm (10.68) exceeds explosion threshold (10.0).
+2026-10-07 20:27:20 - exp_001 - WARNING - Gradient norm (11.29) exceeds explosion threshold (10.0).
+2026-10-07 20:27:21 - exp_001 - INFO - Epoch 11/60 - Time: 15.2s - Train Loss: 1.6657 - Val Loss: 1.7510 - Val F1: 0.4561
+2026-10-07 20:27:25 - exp_001 - WARNING - Gradient norm (13.58) exceeds explosion threshold (10.0).
+2026-10-07 20:27:25 - exp_001 - WARNING - Gradient norm (12.33) exceeds explosion threshold (10.0).
+2026-10-07 20:27:26 - exp_001 - WARNING - Gradient norm (11.87) exceeds explosion threshold (10.0).
+2026-10-07 20:27:26 - exp_001 - WARNING - Gradient norm (14.10) exceeds explosion threshold (10.0).
+2026-10-07 20:27:27 - exp_001 - WARNING - Gradient norm (10.04) exceeds explosion threshold (10.0).
+2026-10-07 20:27:27 - exp_001 - WARNING - Gradient norm (10.24) exceeds explosion threshold (10.0).
+2026-10-07 20:27:29 - exp_001 - WARNING - Gradient norm (12.09) exceeds explosion threshold (10.0).
+2026-10-07 20:27:29 - exp_001 - WARNING - Gradient norm (11.03) exceeds explosion threshold (10.0).
+2026-10-07 20:27:30 - exp_001 - WARNING - Gradient norm (12.40) exceeds explosion threshold (10.0).
+2026-10-07 20:27:31 - exp_001 - WARNING - Gradient norm (11.02) exceeds explosion threshold (10.0).
+2026-10-07 20:27:33 - exp_001 - WARNING - Gradient norm (11.67) exceeds explosion threshold (10.0).
+2026-10-07 20:27:33 - exp_001 - WARNING - Gradient norm (10.99) exceeds explosion threshold (10.0).
+2026-10-07 20:27:33 - exp_001 - WARNING - Gradient norm (11.50) exceeds explosion threshold (10.0).
+2026-10-07 20:27:34 - exp_001 - WARNING - Gradient norm (10.59) exceeds explosion threshold (10.0).
+2026-10-07 20:27:34 - exp_001 - WARNING - Gradient norm (15.09) exceeds explosion threshold (10.0).
+2026-10-07 20:27:34 - exp_001 - WARNING - Gradient norm (11.95) exceeds explosion threshold (10.0).
+2026-10-07 20:27:35 - exp_001 - WARNING - Gradient norm (13.70) exceeds explosion threshold (10.0).
+2026-10-07 20:27:35 - exp_001 - WARNING - Gradient norm (12.88) exceeds explosion threshold (10.0).
+2026-10-07 20:27:37 - exp_001 - INFO - Epoch 12/60 - Time: 15.1s - Train Loss: 1.6158 - Val Loss: 1.7475 - Val F1: 0.4620
+2026-10-07 20:27:41 - exp_001 - WARNING - Gradient norm (12.26) exceeds explosion threshold (10.0).
+2026-10-07 20:27:41 - exp_001 - WARNING - Gradient norm (13.89) exceeds explosion threshold (10.0).
+2026-10-07 20:27:42 - exp_001 - WARNING - Gradient norm (10.10) exceeds explosion threshold (10.0).
+2026-10-07 20:27:43 - exp_001 - WARNING - Gradient norm (10.53) exceeds explosion threshold (10.0).
+2026-10-07 20:27:44 - exp_001 - WARNING - Gradient norm (10.01) exceeds explosion threshold (10.0).
+2026-10-07 20:27:45 - exp_001 - WARNING - Gradient norm (12.76) exceeds explosion threshold (10.0).
+2026-10-07 20:27:45 - exp_001 - WARNING - Gradient norm (11.86) exceeds explosion threshold (10.0).
+2026-10-07 20:27:46 - exp_001 - WARNING - Gradient norm (11.18) exceeds explosion threshold (10.0).
+2026-10-07 20:27:46 - exp_001 - WARNING - Gradient norm (11.91) exceeds explosion threshold (10.0).
+2026-10-07 20:27:47 - exp_001 - WARNING - Gradient norm (12.56) exceeds explosion threshold (10.0).
+2026-10-07 20:27:48 - exp_001 - WARNING - Gradient norm (14.22) exceeds explosion threshold (10.0).
+2026-10-07 20:27:48 - exp_001 - WARNING - Gradient norm (11.55) exceeds explosion threshold (10.0).
+2026-10-07 20:27:49 - exp_001 - WARNING - Gradient norm (10.90) exceeds explosion threshold (10.0).
+2026-10-07 20:27:50 - exp_001 - WARNING - Gradient norm (11.55) exceeds explosion threshold (10.0).
+2026-10-07 20:27:50 - exp_001 - WARNING - Gradient norm (12.11) exceeds explosion threshold (10.0).
+2026-10-07 20:27:50 - exp_001 - WARNING - Gradient norm (12.68) exceeds explosion threshold (10.0).
+2026-10-07 20:27:51 - exp_001 - WARNING - Gradient norm (10.23) exceeds explosion threshold (10.0).
+2026-10-07 20:27:51 - exp_001 - WARNING - Gradient norm (10.99) exceeds explosion threshold (10.0).
+2026-10-07 20:27:51 - exp_001 - WARNING - Gradient norm (12.06) exceeds explosion threshold (10.0).
+2026-10-07 20:27:53 - exp_001 - INFO - Epoch 13/60 - Time: 14.6s - Train Loss: 1.6198 - Val Loss: 1.7527 - Val F1: 0.4727
+2026-10-07 20:27:56 - exp_001 - WARNING - Gradient norm (11.90) exceeds explosion threshold (10.0).
+2026-10-07 20:27:57 - exp_001 - WARNING - Gradient norm (12.87) exceeds explosion threshold (10.0).
+2026-10-07 20:28:00 - exp_001 - WARNING - Gradient norm (10.08) exceeds explosion threshold (10.0).
+2026-10-07 20:28:00 - exp_001 - WARNING - Gradient norm (11.00) exceeds explosion threshold (10.0).
+2026-10-07 20:28:03 - exp_001 - WARNING - Gradient norm (10.60) exceeds explosion threshold (10.0).
+2026-10-07 20:28:04 - exp_001 - WARNING - Gradient norm (13.53) exceeds explosion threshold (10.0).
+2026-10-07 20:28:05 - exp_001 - WARNING - Gradient norm (10.73) exceeds explosion threshold (10.0).
+2026-10-07 20:28:06 - exp_001 - WARNING - Gradient norm (10.23) exceeds explosion threshold (10.0).
+2026-10-07 20:28:06 - exp_001 - WARNING - Gradient norm (10.31) exceeds explosion threshold (10.0).
+2026-10-07 20:28:08 - exp_001 - INFO - Epoch 14/60 - Time: 14.8s - Train Loss: 1.4941 - Val Loss: 1.5988 - Val F1: 0.5258
+2026-10-07 20:28:12 - exp_001 - WARNING - Gradient norm (11.45) exceeds explosion threshold (10.0).
+2026-10-07 20:28:12 - exp_001 - WARNING - Gradient norm (12.35) exceeds explosion threshold (10.0).
+2026-10-07 20:28:15 - exp_001 - WARNING - Gradient norm (12.87) exceeds explosion threshold (10.0).
+2026-10-07 20:28:16 - exp_001 - WARNING - Gradient norm (10.59) exceeds explosion threshold (10.0).
+2026-10-07 20:28:16 - exp_001 - WARNING - Gradient norm (12.91) exceeds explosion threshold (10.0).
+2026-10-07 20:28:17 - exp_001 - WARNING - Gradient norm (10.28) exceeds explosion threshold (10.0).
+2026-10-07 20:28:19 - exp_001 - WARNING - Gradient norm (10.39) exceeds explosion threshold (10.0).
+2026-10-07 20:28:20 - exp_001 - WARNING - Gradient norm (11.51) exceeds explosion threshold (10.0).
+2026-10-07 20:28:21 - exp_001 - WARNING - Gradient norm (11.17) exceeds explosion threshold (10.0).
+2026-10-07 20:28:21 - exp_001 - WARNING - Gradient norm (13.41) exceeds explosion threshold (10.0).
+2026-10-07 20:28:22 - exp_001 - WARNING - Gradient norm (12.25) exceeds explosion threshold (10.0).
+2026-10-07 20:28:24 - exp_001 - INFO - Epoch 15/60 - Time: 14.8s - Train Loss: 1.4636 - Val Loss: 1.6020 - Val F1: 0.5937
+2026-10-07 20:28:30 - exp_001 - WARNING - Gradient norm (11.25) exceeds explosion threshold (10.0).
+2026-10-07 20:28:31 - exp_001 - WARNING - Gradient norm (12.21) exceeds explosion threshold (10.0).
+2026-10-07 20:28:33 - exp_001 - WARNING - Gradient norm (15.74) exceeds explosion threshold (10.0).
+2026-10-07 20:28:34 - exp_001 - WARNING - Gradient norm (10.29) exceeds explosion threshold (10.0).
+2026-10-07 20:28:34 - exp_001 - WARNING - Gradient norm (14.36) exceeds explosion threshold (10.0).
+2026-10-07 20:28:36 - exp_001 - WARNING - Gradient norm (12.07) exceeds explosion threshold (10.0).
+2026-10-07 20:28:37 - exp_001 - WARNING - Gradient norm (11.84) exceeds explosion threshold (10.0).
+2026-10-07 20:28:40 - exp_001 - INFO - Epoch 16/60 - Time: 14.8s - Train Loss: 1.4120 - Val Loss: 1.5658 - Val F1: 0.5920
+2026-10-07 20:28:43 - exp_001 - WARNING - Gradient norm (10.79) exceeds explosion threshold (10.0).
+2026-10-07 20:28:45 - exp_001 - WARNING - Gradient norm (10.11) exceeds explosion threshold (10.0).
+2026-10-07 20:28:46 - exp_001 - WARNING - Gradient norm (11.14) exceeds explosion threshold (10.0).
+2026-10-07 20:28:47 - exp_001 - WARNING - Gradient norm (12.85) exceeds explosion threshold (10.0).
+2026-10-07 20:28:47 - exp_001 - WARNING - Gradient norm (11.04) exceeds explosion threshold (10.0).
+2026-10-07 20:28:50 - exp_001 - WARNING - Gradient norm (13.02) exceeds explosion threshold (10.0).
+2026-10-07 20:28:50 - exp_001 - WARNING - Gradient norm (13.63) exceeds explosion threshold (10.0).
+2026-10-07 20:28:51 - exp_001 - WARNING - Gradient norm (12.76) exceeds explosion threshold (10.0).
+2026-10-07 20:28:52 - exp_001 - WARNING - Gradient norm (11.75) exceeds explosion threshold (10.0).
+2026-10-07 20:28:53 - exp_001 - WARNING - Gradient norm (10.85) exceeds explosion threshold (10.0).
+2026-10-07 20:28:54 - exp_001 - INFO - Epoch 17/60 - Time: 13.9s - Train Loss: 1.3529 - Val Loss: 1.6071 - Val F1: 0.5302
+2026-10-07 20:28:57 - exp_001 - WARNING - Gradient norm (11.92) exceeds explosion threshold (10.0).
+2026-10-07 20:28:59 - exp_001 - WARNING - Gradient norm (10.80) exceeds explosion threshold (10.0).
+2026-10-07 20:29:00 - exp_001 - WARNING - Gradient norm (15.14) exceeds explosion threshold (10.0).
+2026-10-07 20:29:02 - exp_001 - WARNING - Gradient norm (11.26) exceeds explosion threshold (10.0).
+2026-10-07 20:29:03 - exp_001 - WARNING - Gradient norm (13.75) exceeds explosion threshold (10.0).
+2026-10-07 20:29:04 - exp_001 - WARNING - Gradient norm (14.51) exceeds explosion threshold (10.0).
+2026-10-07 20:29:05 - exp_001 - WARNING - Gradient norm (10.26) exceeds explosion threshold (10.0).
+2026-10-07 20:29:06 - exp_001 - WARNING - Gradient norm (10.05) exceeds explosion threshold (10.0).
+2026-10-07 20:29:08 - exp_001 - INFO - Epoch 18/60 - Time: 13.9s - Train Loss: 1.3594 - Val Loss: 1.5965 - Val F1: 0.5752
+2026-10-07 20:29:11 - exp_001 - WARNING - Gradient norm (10.09) exceeds explosion threshold (10.0).
+2026-10-07 20:29:11 - exp_001 - WARNING - Gradient norm (12.90) exceeds explosion threshold (10.0).
+2026-10-07 20:29:13 - exp_001 - WARNING - Gradient norm (12.13) exceeds explosion threshold (10.0).
+2026-10-07 20:29:14 - exp_001 - WARNING - Gradient norm (10.51) exceeds explosion threshold (10.0).
+2026-10-07 20:29:14 - exp_001 - WARNING - Gradient norm (10.99) exceeds explosion threshold (10.0).
+2026-10-07 20:29:18 - exp_001 - WARNING - Gradient norm (11.56) exceeds explosion threshold (10.0).
+2026-10-07 20:29:18 - exp_001 - WARNING - Gradient norm (11.11) exceeds explosion threshold (10.0).
+2026-10-07 20:29:19 - exp_001 - WARNING - Gradient norm (10.37) exceeds explosion threshold (10.0).
+2026-10-07 20:29:21 - exp_001 - WARNING - Gradient norm (11.40) exceeds explosion threshold (10.0).
+2026-10-07 20:29:21 - exp_001 - WARNING - Gradient norm (15.47) exceeds explosion threshold (10.0).
+2026-10-07 20:29:21 - exp_001 - WARNING - Gradient norm (11.45) exceeds explosion threshold (10.0).
+2026-10-07 20:29:23 - exp_001 - INFO - Epoch 19/60 - Time: 14.3s - Train Loss: 1.5180 - Val Loss: 1.5624 - Val F1: 0.5805
+2026-10-07 20:29:25 - exp_001 - WARNING - Gradient norm (11.23) exceeds explosion threshold (10.0).
+2026-10-07 20:29:27 - exp_001 - WARNING - Gradient norm (11.69) exceeds explosion threshold (10.0).
+2026-10-07 20:29:27 - exp_001 - WARNING - Gradient norm (11.69) exceeds explosion threshold (10.0).
+2026-10-07 20:29:32 - exp_001 - WARNING - Gradient norm (11.78) exceeds explosion threshold (10.0).
+2026-10-07 20:29:32 - exp_001 - WARNING - Gradient norm (10.64) exceeds explosion threshold (10.0).
+2026-10-07 20:29:33 - exp_001 - WARNING - Gradient norm (10.15) exceeds explosion threshold (10.0).
+2026-10-07 20:29:33 - exp_001 - WARNING - Gradient norm (12.00) exceeds explosion threshold (10.0).
+2026-10-07 20:29:34 - exp_001 - WARNING - Gradient norm (10.50) exceeds explosion threshold (10.0).
+2026-10-07 20:29:38 - exp_001 - INFO - Epoch 20/60 - Time: 13.7s - Train Loss: 1.4450 - Val Loss: 1.5748 - Val F1: 0.6218
+2026-10-07 20:29:41 - exp_001 - WARNING - Gradient norm (12.63) exceeds explosion threshold (10.0).
+2026-10-07 20:29:44 - exp_001 - WARNING - Gradient norm (12.23) exceeds explosion threshold (10.0).
+2026-10-07 20:29:45 - exp_001 - WARNING - Gradient norm (10.23) exceeds explosion threshold (10.0).
+2026-10-07 20:29:46 - exp_001 - WARNING - Gradient norm (12.73) exceeds explosion threshold (10.0).
+2026-10-07 20:29:47 - exp_001 - WARNING - Gradient norm (11.95) exceeds explosion threshold (10.0).
+2026-10-07 20:29:48 - exp_001 - WARNING - Gradient norm (11.59) exceeds explosion threshold (10.0).
+2026-10-07 20:29:50 - exp_001 - WARNING - Gradient norm (12.90) exceeds explosion threshold (10.0).
+2026-10-07 20:29:52 - exp_001 - INFO - Epoch 21/60 - Time: 14.0s - Train Loss: 1.4214 - Val Loss: 1.5552 - Val F1: 0.5681
+2026-10-07 20:29:55 - exp_001 - WARNING - Gradient norm (10.35) exceeds explosion threshold (10.0).
+2026-10-07 20:29:55 - exp_001 - WARNING - Gradient norm (11.55) exceeds explosion threshold (10.0).
+2026-10-07 20:29:56 - exp_001 - WARNING - Gradient norm (13.27) exceeds explosion threshold (10.0).
+2026-10-07 20:30:02 - exp_001 - WARNING - Gradient norm (10.86) exceeds explosion threshold (10.0).
+2026-10-07 20:30:02 - exp_001 - WARNING - Gradient norm (10.52) exceeds explosion threshold (10.0).
+2026-10-07 20:30:05 - exp_001 - WARNING - Gradient norm (10.49) exceeds explosion threshold (10.0).
+2026-10-07 20:30:06 - exp_001 - INFO - Epoch 22/60 - Time: 13.7s - Train Loss: 1.2817 - Val Loss: 1.5928 - Val F1: 0.5186
+2026-10-07 20:30:09 - exp_001 - WARNING - Gradient norm (11.23) exceeds explosion threshold (10.0).
+2026-10-07 20:30:11 - exp_001 - WARNING - Gradient norm (11.93) exceeds explosion threshold (10.0).
+2026-10-07 20:30:12 - exp_001 - WARNING - Gradient norm (10.32) exceeds explosion threshold (10.0).
+2026-10-07 20:30:13 - exp_001 - WARNING - Gradient norm (10.70) exceeds explosion threshold (10.0).
+2026-10-07 20:30:16 - exp_001 - WARNING - Gradient norm (11.69) exceeds explosion threshold (10.0).
+2026-10-07 20:30:17 - exp_001 - WARNING - Gradient norm (10.19) exceeds explosion threshold (10.0).
+2026-10-07 20:30:21 - exp_001 - INFO - Epoch 23/60 - Time: 14.0s - Train Loss: 1.3616 - Val Loss: 1.5596 - Val F1: 0.5829
+2026-10-07 20:30:25 - exp_001 - WARNING - Gradient norm (12.42) exceeds explosion threshold (10.0).
+2026-10-07 20:30:29 - exp_001 - WARNING - Gradient norm (10.96) exceeds explosion threshold (10.0).
+2026-10-07 20:30:31 - exp_001 - WARNING - Gradient norm (11.13) exceeds explosion threshold (10.0).
+2026-10-07 20:30:32 - exp_001 - WARNING - Gradient norm (10.69) exceeds explosion threshold (10.0).
+2026-10-07 20:30:33 - exp_001 - WARNING - Gradient norm (10.18) exceeds explosion threshold (10.0).
+2026-10-07 20:30:33 - exp_001 - WARNING - Gradient norm (11.67) exceeds explosion threshold (10.0).
+2026-10-07 20:30:35 - exp_001 - INFO - Epoch 24/60 - Time: 13.7s - Train Loss: 1.2811 - Val Loss: 1.6427 - Val F1: 0.5363
+2026-10-07 20:30:39 - exp_001 - WARNING - Gradient norm (10.09) exceeds explosion threshold (10.0).
+2026-10-07 20:30:40 - exp_001 - WARNING - Gradient norm (10.86) exceeds explosion threshold (10.0).
+2026-10-07 20:30:41 - exp_001 - WARNING - Gradient norm (10.56) exceeds explosion threshold (10.0).
+2026-10-07 20:30:42 - exp_001 - WARNING - Gradient norm (10.69) exceeds explosion threshold (10.0).
+2026-10-07 20:30:43 - exp_001 - WARNING - Gradient norm (13.00) exceeds explosion threshold (10.0).
+2026-10-07 20:30:43 - exp_001 - WARNING - Gradient norm (11.13) exceeds explosion threshold (10.0).
+2026-10-07 20:30:46 - exp_001 - WARNING - Gradient norm (11.24) exceeds explosion threshold (10.0).
+2026-10-07 20:30:49 - exp_001 - INFO - Epoch 25/60 - Time: 13.7s - Train Loss: 1.3436 - Val Loss: 1.5807 - Val F1: 0.6116
+2026-10-07 20:30:52 - exp_001 - WARNING - Gradient norm (10.03) exceeds explosion threshold (10.0).
+2026-10-07 20:30:55 - exp_001 - WARNING - Gradient norm (10.05) exceeds explosion threshold (10.0).
+2026-10-07 20:30:56 - exp_001 - WARNING - Gradient norm (10.03) exceeds explosion threshold (10.0).
+2026-10-07 20:30:57 - exp_001 - WARNING - Gradient norm (11.32) exceeds explosion threshold (10.0).
+2026-10-07 20:31:03 - exp_001 - INFO - Epoch 26/60 - Time: 13.4s - Train Loss: 1.3400 - Val Loss: 1.5384 - Val F1: 0.6073
+2026-10-07 20:31:08 - exp_001 - WARNING - Gradient norm (10.60) exceeds explosion threshold (10.0).
+2026-10-07 20:31:09 - exp_001 - WARNING - Gradient norm (11.86) exceeds explosion threshold (10.0).
+2026-10-07 20:31:10 - exp_001 - WARNING - Gradient norm (10.42) exceeds explosion threshold (10.0).
+2026-10-07 20:31:12 - exp_001 - WARNING - Gradient norm (12.40) exceeds explosion threshold (10.0).
+2026-10-07 20:31:13 - exp_001 - WARNING - Gradient norm (10.50) exceeds explosion threshold (10.0).
+2026-10-07 20:31:16 - exp_001 - WARNING - Gradient norm (11.43) exceeds explosion threshold (10.0).
+2026-10-07 20:31:17 - exp_001 - INFO - Epoch 27/60 - Time: 13.6s - Train Loss: 1.1797 - Val Loss: 1.5465 - Val F1: 0.6000
+2026-10-07 20:31:23 - exp_001 - WARNING - Gradient norm (10.05) exceeds explosion threshold (10.0).
+2026-10-07 20:31:24 - exp_001 - WARNING - Gradient norm (10.60) exceeds explosion threshold (10.0).
+2026-10-07 20:31:25 - exp_001 - WARNING - Gradient norm (11.40) exceeds explosion threshold (10.0).
+2026-10-07 20:31:26 - exp_001 - WARNING - Gradient norm (10.14) exceeds explosion threshold (10.0).
+2026-10-07 20:31:29 - exp_001 - WARNING - Gradient norm (10.38) exceeds explosion threshold (10.0).
+2026-10-07 20:31:32 - exp_001 - INFO - Epoch 28/60 - Time: 14.2s - Train Loss: 1.2716 - Val Loss: 1.4967 - Val F1: 0.6248
+2026-10-07 20:31:35 - exp_001 - WARNING - Gradient norm (11.65) exceeds explosion threshold (10.0).
+2026-10-07 20:31:35 - exp_001 - WARNING - Gradient norm (10.89) exceeds explosion threshold (10.0).
+2026-10-07 20:31:36 - exp_001 - WARNING - Gradient norm (11.02) exceeds explosion threshold (10.0).
+2026-10-07 20:31:43 - exp_001 - WARNING - Gradient norm (11.53) exceeds explosion threshold (10.0).
+2026-10-07 20:31:47 - exp_001 - INFO - Epoch 29/60 - Time: 14.4s - Train Loss: 1.2424 - Val Loss: 1.5368 - Val F1: 0.5882
+2026-10-07 20:31:51 - exp_001 - WARNING - Gradient norm (10.52) exceeds explosion threshold (10.0).
+2026-10-07 20:31:53 - exp_001 - WARNING - Gradient norm (10.29) exceeds explosion threshold (10.0).
+2026-10-07 20:31:54 - exp_001 - WARNING - Gradient norm (11.46) exceeds explosion threshold (10.0).
+2026-10-07 20:31:58 - exp_001 - WARNING - Gradient norm (11.96) exceeds explosion threshold (10.0).
+2026-10-07 20:32:02 - exp_001 - INFO - Epoch 30/60 - Time: 14.0s - Train Loss: 1.2204 - Val Loss: 1.4639 - Val F1: 0.6456
+2026-10-07 20:32:12 - exp_001 - WARNING - Gradient norm (10.51) exceeds explosion threshold (10.0).
+2026-10-07 20:32:14 - exp_001 - WARNING - Gradient norm (10.19) exceeds explosion threshold (10.0).
+2026-10-07 20:32:16 - exp_001 - INFO - Epoch 31/60 - Time: 14.0s - Train Loss: 1.2253 - Val Loss: 1.5275 - Val F1: 0.6125
+2026-10-07 20:32:20 - exp_001 - WARNING - Gradient norm (11.00) exceeds explosion threshold (10.0).
+2026-10-07 20:32:22 - exp_001 - WARNING - Gradient norm (10.86) exceeds explosion threshold (10.0).
+2026-10-07 20:32:23 - exp_001 - WARNING - Gradient norm (11.74) exceeds explosion threshold (10.0).
+2026-10-07 20:32:26 - exp_001 - WARNING - Gradient norm (12.92) exceeds explosion threshold (10.0).
+2026-10-07 20:32:28 - exp_001 - WARNING - Gradient norm (11.36) exceeds explosion threshold (10.0).
+2026-10-07 20:32:29 - exp_001 - WARNING - Gradient norm (10.72) exceeds explosion threshold (10.0).
+2026-10-07 20:32:31 - exp_001 - INFO - Epoch 32/60 - Time: 14.4s - Train Loss: 1.2751 - Val Loss: 1.5021 - Val F1: 0.6131
+2026-10-07 20:32:46 - exp_001 - INFO - Epoch 33/60 - Time: 14.3s - Train Loss: 1.0768 - Val Loss: 1.4997 - Val F1: 0.6165
+2026-10-07 20:32:53 - exp_001 - WARNING - Gradient norm (10.16) exceeds explosion threshold (10.0).
+2026-10-07 20:32:57 - exp_001 - WARNING - Gradient norm (10.92) exceeds explosion threshold (10.0).
+2026-10-07 20:32:58 - exp_001 - WARNING - Gradient norm (12.06) exceeds explosion threshold (10.0).
+2026-10-07 20:33:02 - exp_001 - INFO - Epoch 34/60 - Time: 15.0s - Train Loss: 1.1801 - Val Loss: 1.5056 - Val F1: 0.6028
+2026-10-07 20:33:12 - exp_001 - WARNING - Gradient norm (10.32) exceeds explosion threshold (10.0).
+2026-10-07 20:33:14 - exp_001 - WARNING - Gradient norm (12.95) exceeds explosion threshold (10.0).
+2026-10-07 20:33:16 - exp_001 - INFO - Epoch 35/60 - Time: 13.5s - Train Loss: 1.2704 - Val Loss: 1.5361 - Val F1: 0.6322
+2026-10-07 20:33:20 - exp_001 - WARNING - Gradient norm (10.39) exceeds explosion threshold (10.0).
+2026-10-07 20:33:22 - exp_001 - WARNING - Gradient norm (10.70) exceeds explosion threshold (10.0).
+2026-10-07 20:33:22 - exp_001 - WARNING - Gradient norm (12.48) exceeds explosion threshold (10.0).
+2026-10-07 20:33:24 - exp_001 - WARNING - Gradient norm (10.05) exceeds explosion threshold (10.0).
+2026-10-07 20:33:26 - exp_001 - WARNING - Gradient norm (11.35) exceeds explosion threshold (10.0).
+2026-10-07 20:33:26 - exp_001 - WARNING - Gradient norm (10.20) exceeds explosion threshold (10.0).
+2026-10-07 20:33:27 - exp_001 - WARNING - Gradient norm (11.30) exceeds explosion threshold (10.0).
+2026-10-07 20:33:28 - exp_001 - WARNING - Gradient norm (11.43) exceeds explosion threshold (10.0).
+2026-10-07 20:33:30 - exp_001 - INFO - Epoch 36/60 - Time: 13.6s - Train Loss: 1.3066 - Val Loss: 1.5388 - Val F1: 0.6189
+2026-10-07 20:33:33 - exp_001 - WARNING - Gradient norm (13.99) exceeds explosion threshold (10.0).
+2026-10-07 20:33:35 - exp_001 - WARNING - Gradient norm (12.35) exceeds explosion threshold (10.0).
+2026-10-07 20:33:37 - exp_001 - WARNING - Gradient norm (10.61) exceeds explosion threshold (10.0).
+2026-10-07 20:33:41 - exp_001 - WARNING - Gradient norm (12.43) exceeds explosion threshold (10.0).
+2026-10-07 20:33:44 - exp_001 - INFO - Epoch 37/60 - Time: 13.7s - Train Loss: 1.2322 - Val Loss: 1.4932 - Val F1: 0.5990
+2026-10-07 20:33:54 - exp_001 - WARNING - Gradient norm (11.13) exceeds explosion threshold (10.0).
+2026-10-07 20:33:58 - exp_001 - INFO - Epoch 38/60 - Time: 14.0s - Train Loss: 1.1677 - Val Loss: 1.5095 - Val F1: 0.5869
+2026-10-07 20:34:04 - exp_001 - WARNING - Gradient norm (11.85) exceeds explosion threshold (10.0).
+2026-10-07 20:34:05 - exp_001 - WARNING - Gradient norm (10.86) exceeds explosion threshold (10.0).
+2026-10-07 20:34:06 - exp_001 - WARNING - Gradient norm (10.98) exceeds explosion threshold (10.0).
+2026-10-07 20:34:10 - exp_001 - WARNING - Gradient norm (10.56) exceeds explosion threshold (10.0).
+2026-10-07 20:34:13 - exp_001 - INFO - Epoch 39/60 - Time: 13.7s - Train Loss: 1.1495 - Val Loss: 1.4851 - Val F1: 0.6131
+2026-10-07 20:34:20 - exp_001 - WARNING - Gradient norm (10.22) exceeds explosion threshold (10.0).
+2026-10-07 20:34:20 - exp_001 - WARNING - Gradient norm (12.78) exceeds explosion threshold (10.0).
+2026-10-07 20:34:23 - exp_001 - WARNING - Gradient norm (11.65) exceeds explosion threshold (10.0).
+2026-10-07 20:34:27 - exp_001 - INFO - Epoch 40/60 - Time: 13.4s - Train Loss: 1.1799 - Val Loss: 1.4575 - Val F1: 0.6357
+2026-10-07 20:34:38 - exp_001 - WARNING - Gradient norm (10.59) exceeds explosion threshold (10.0).
+2026-10-07 20:34:39 - exp_001 - WARNING - Gradient norm (11.17) exceeds explosion threshold (10.0).
+2026-10-07 20:34:41 - exp_001 - INFO - Epoch 41/60 - Time: 14.1s - Train Loss: 1.1316 - Val Loss: 1.4608 - Val F1: 0.6207
+2026-10-07 20:34:51 - exp_001 - WARNING - Gradient norm (10.75) exceeds explosion threshold (10.0).
+2026-10-07 20:34:55 - exp_001 - INFO - Epoch 42/60 - Time: 13.7s - Train Loss: 1.0644 - Val Loss: 1.4507 - Val F1: 0.6386
+2026-10-07 20:35:02 - exp_001 - WARNING - Gradient norm (10.63) exceeds explosion threshold (10.0).
+2026-10-07 20:35:10 - exp_001 - INFO - Epoch 43/60 - Time: 13.7s - Train Loss: 1.2152 - Val Loss: 1.4781 - Val F1: 0.6467
+2026-10-07 20:35:16 - exp_001 - WARNING - Gradient norm (11.59) exceeds explosion threshold (10.0).
+2026-10-07 20:35:18 - exp_001 - WARNING - Gradient norm (10.76) exceeds explosion threshold (10.0).
+2026-10-07 20:35:20 - exp_001 - WARNING - Gradient norm (10.31) exceeds explosion threshold (10.0).
+2026-10-07 20:35:24 - exp_001 - INFO - Epoch 44/60 - Time: 13.7s - Train Loss: 1.0864 - Val Loss: 1.4494 - Val F1: 0.6358
+2026-10-07 20:35:30 - exp_001 - WARNING - Gradient norm (10.26) exceeds explosion threshold (10.0).
+2026-10-07 20:35:33 - exp_001 - WARNING - Gradient norm (10.65) exceeds explosion threshold (10.0).
+2026-10-07 20:35:34 - exp_001 - WARNING - Gradient norm (11.37) exceeds explosion threshold (10.0).
+2026-10-07 20:35:38 - exp_001 - INFO - Epoch 45/60 - Time: 13.8s - Train Loss: 1.2137 - Val Loss: 1.4589 - Val F1: 0.6277
+2026-10-07 20:35:52 - exp_001 - INFO - Epoch 46/60 - Time: 13.2s - Train Loss: 1.0917 - Val Loss: 1.4735 - Val F1: 0.6513
+2026-10-07 20:36:04 - exp_001 - WARNING - Gradient norm (10.80) exceeds explosion threshold (10.0).
+2026-10-07 20:36:06 - exp_001 - INFO - Epoch 47/60 - Time: 13.4s - Train Loss: 1.1577 - Val Loss: 1.4619 - Val F1: 0.6311
+2026-10-07 20:36:11 - exp_001 - WARNING - Gradient norm (11.53) exceeds explosion threshold (10.0).
+2026-10-07 20:36:21 - exp_001 - INFO - Epoch 48/60 - Time: 14.2s - Train Loss: 1.0993 - Val Loss: 1.4504 - Val F1: 0.6523
+2026-10-07 20:36:35 - exp_001 - INFO - Epoch 49/60 - Time: 13.9s - Train Loss: 1.1472 - Val Loss: 1.4542 - Val F1: 0.6451
+2026-10-07 20:36:46 - exp_001 - WARNING - Gradient norm (10.26) exceeds explosion threshold (10.0).
+2026-10-07 20:36:48 - exp_001 - WARNING - Gradient norm (10.12) exceeds explosion threshold (10.0).
+2026-10-07 20:36:50 - exp_001 - INFO - Epoch 50/60 - Time: 14.0s - Train Loss: 1.1595 - Val Loss: 1.4541 - Val F1: 0.6501
+2026-10-07 20:37:05 - exp_001 - INFO - Epoch 51/60 - Time: 14.8s - Train Loss: 1.0576 - Val Loss: 1.4687 - Val F1: 0.6593
+2026-10-07 20:37:20 - exp_001 - INFO - Epoch 52/60 - Time: 14.5s - Train Loss: 1.0760 - Val Loss: 1.4546 - Val F1: 0.6290
+2026-10-07 20:37:23 - exp_001 - WARNING - Gradient norm (11.28) exceeds explosion threshold (10.0).
+2026-10-07 20:37:32 - exp_001 - WARNING - Gradient norm (11.03) exceeds explosion threshold (10.0).
+2026-10-07 20:37:35 - exp_001 - INFO - Epoch 53/60 - Time: 13.8s - Train Loss: 1.2888 - Val Loss: 1.4444 - Val F1: 0.6629
+2026-10-07 20:37:41 - exp_001 - WARNING - Gradient norm (11.02) exceeds explosion threshold (10.0).
+2026-10-07 20:37:43 - exp_001 - WARNING - Gradient norm (10.45) exceeds explosion threshold (10.0).
+2026-10-07 20:37:50 - exp_001 - INFO - Epoch 54/60 - Time: 14.0s - Train Loss: 1.0733 - Val Loss: 1.4448 - Val F1: 0.6344
+2026-10-07 20:37:55 - exp_001 - WARNING - Gradient norm (11.21) exceeds explosion threshold (10.0).
+2026-10-07 20:38:03 - exp_001 - INFO - Epoch 55/60 - Time: 13.3s - Train Loss: 1.0850 - Val Loss: 1.4575 - Val F1: 0.6498
+2026-10-07 20:38:11 - exp_001 - WARNING - Gradient norm (12.62) exceeds explosion threshold (10.0).
+2026-10-07 20:38:12 - exp_001 - WARNING - Gradient norm (10.19) exceeds explosion threshold (10.0).
+2026-10-07 20:38:14 - exp_001 - WARNING - Gradient norm (11.19) exceeds explosion threshold (10.0).
+2026-10-07 20:38:17 - exp_001 - INFO - Epoch 56/60 - Time: 13.6s - Train Loss: 1.0540 - Val Loss: 1.4484 - Val F1: 0.6611
+2026-10-07 20:38:26 - exp_001 - WARNING - Gradient norm (10.72) exceeds explosion threshold (10.0).
+2026-10-07 20:38:28 - exp_001 - WARNING - Gradient norm (10.04) exceeds explosion threshold (10.0).
+2026-10-07 20:38:32 - exp_001 - INFO - Epoch 57/60 - Time: 13.9s - Train Loss: 1.1577 - Val Loss: 1.4560 - Val F1: 0.6359
+2026-10-07 20:38:46 - exp_001 - INFO - Epoch 58/60 - Time: 13.5s - Train Loss: 1.0918 - Val Loss: 1.4695 - Val F1: 0.6402
+2026-10-07 20:38:50 - exp_001 - WARNING - Gradient norm (10.74) exceeds explosion threshold (10.0).
+2026-10-07 20:38:57 - exp_001 - WARNING - Gradient norm (10.19) exceeds explosion threshold (10.0).
+2026-10-07 20:39:00 - exp_001 - INFO - Epoch 59/60 - Time: 13.8s - Train Loss: 1.1307 - Val Loss: 1.4552 - Val F1: 0.6573
+2026-10-07 20:39:01 - exp_001 - INFO - Updating Batch Norm for SWA...
+2026-10-07 20:39:10 - exp_001 - INFO - SWA model saved: results/checkpoints/exp_001_densenet121_swa.pt
+2026-10-07 20:39:10 - exp_001 - INFO - Best checkpoint saved: results/checkpoints/exp_001_densenet121_swa.pt
+2026-10-07 20:39:10 - exp_001 - INFO - === Training resnet50 (Fold 0) ===
+2026-10-07 20:39:13 - exp_001 - WARNING - Gradient norm (10.25) exceeds explosion threshold (10.0).
+2026-10-07 20:39:16 - exp_001 - WARNING - Gradient norm (10.49) exceeds explosion threshold (10.0).
+2026-10-07 20:39:17 - exp_001 - WARNING - Gradient norm (10.21) exceeds explosion threshold (10.0).
+2026-10-07 20:39:18 - exp_001 - WARNING - Gradient norm (10.71) exceeds explosion threshold (10.0).
+2026-10-07 20:39:18 - exp_001 - WARNING - Gradient norm (10.58) exceeds explosion threshold (10.0).
+2026-10-07 20:39:20 - exp_001 - WARNING - Gradient norm (11.62) exceeds explosion threshold (10.0).
+2026-10-07 20:39:23 - exp_001 - INFO - Epoch 0/60 - Time: 11.6s - Train Loss: 2.3471 - Val Loss: 2.2040 - Val F1: 0.1238
+2026-10-07 20:39:31 - exp_001 - WARNING - Gradient norm (10.02) exceeds explosion threshold (10.0).
+2026-10-07 20:39:34 - exp_001 - INFO - Epoch 1/60 - Time: 10.5s - Train Loss: 2.2292 - Val Loss: 2.0859 - Val F1: 0.1942
+2026-10-07 20:39:39 - exp_001 - WARNING - Gradient norm (10.23) exceeds explosion threshold (10.0).
+2026-10-07 20:39:45 - exp_001 - INFO - Epoch 2/60 - Time: 10.7s - Train Loss: 2.0896 - Val Loss: 1.9792 - Val F1: 0.2686
+2026-10-07 20:39:56 - exp_001 - INFO - Epoch 3/60 - Time: 10.5s - Train Loss: 1.9821 - Val Loss: 1.9197 - Val F1: 0.2451
+2026-10-07 20:40:07 - exp_001 - INFO - Epoch 4/60 - Time: 10.4s - Train Loss: 1.8852 - Val Loss: 1.9062 - Val F1: 0.3148
+2026-10-07 20:40:10 - exp_001 - WARNING - NaN/Inf detected in gradients. Skipping batch.
+2026-10-07 20:40:10 - exp_001 - WARNING - NaN/Inf detected in gradients. Skipping batch.
+2026-10-07 20:40:11 - exp_001 - WARNING - Gradient norm (17.28) exceeds explosion threshold (10.0).
+2026-10-07 20:40:11 - exp_001 - WARNING - Gradient norm (18.74) exceeds explosion threshold (10.0).
+2026-10-07 20:40:11 - exp_001 - WARNING - Gradient norm (17.48) exceeds explosion threshold (10.0).
+2026-10-07 20:40:12 - exp_001 - WARNING - Gradient norm (15.92) exceeds explosion threshold (10.0).
+2026-10-07 20:40:12 - exp_001 - WARNING - Gradient norm (14.62) exceeds explosion threshold (10.0).
+2026-10-07 20:40:13 - exp_001 - WARNING - Gradient norm (21.33) exceeds explosion threshold (10.0).
+2026-10-07 20:40:13 - exp_001 - WARNING - Gradient norm (18.29) exceeds explosion threshold (10.0).
+2026-10-07 20:40:13 - exp_001 - WARNING - Gradient norm (19.51) exceeds explosion threshold (10.0).
+2026-10-07 20:40:14 - exp_001 - WARNING - Gradient norm (15.52) exceeds explosion threshold (10.0).
+2026-10-07 20:40:14 - exp_001 - WARNING - Gradient norm (18.02) exceeds explosion threshold (10.0).
+2026-10-07 20:40:14 - exp_001 - WARNING - Gradient norm (19.47) exceeds explosion threshold (10.0).
+2026-10-07 20:40:15 - exp_001 - WARNING - Gradient norm (21.84) exceeds explosion threshold (10.0).
+2026-10-07 20:40:15 - exp_001 - WARNING - Gradient norm (17.43) exceeds explosion threshold (10.0).
+2026-10-07 20:40:16 - exp_001 - WARNING - Gradient norm (18.30) exceeds explosion threshold (10.0).
+2026-10-07 20:40:16 - exp_001 - WARNING - Gradient norm (21.23) exceeds explosion threshold (10.0).
+2026-10-07 20:40:16 - exp_001 - WARNING - Gradient norm (22.48) exceeds explosion threshold (10.0).
+2026-10-07 20:40:17 - exp_001 - WARNING - Gradient norm (15.63) exceeds explosion threshold (10.0).
+2026-10-07 20:40:17 - exp_001 - WARNING - Gradient norm (12.55) exceeds explosion threshold (10.0).
+2026-10-07 20:40:17 - exp_001 - WARNING - Gradient norm (20.13) exceeds explosion threshold (10.0).
+2026-10-07 20:40:18 - exp_001 - WARNING - Gradient norm (18.98) exceeds explosion threshold (10.0).
+2026-10-07 20:40:18 - exp_001 - WARNING - Gradient norm (14.05) exceeds explosion threshold (10.0).
+2026-10-07 20:40:18 - exp_001 - WARNING - Gradient norm (16.27) exceeds explosion threshold (10.0).
+2026-10-07 20:40:18 - exp_001 - WARNING - Gradient norm (17.88) exceeds explosion threshold (10.0).
+2026-10-07 20:40:18 - exp_001 - WARNING - Gradient norm (16.21) exceeds explosion threshold (10.0).
+2026-10-07 20:40:19 - exp_001 - WARNING - Gradient norm (15.81) exceeds explosion threshold (10.0).
+2026-10-07 20:40:19 - exp_001 - WARNING - Epoch 5: skipped 2/27 batches
+2026-10-07 20:40:20 - exp_001 - INFO - Epoch 5/60 - Time: 12.4s - Train Loss: 1.9394 - Val Loss: 1.8567 - Val F1: 0.3259
+2026-10-07 20:40:23 - exp_001 - WARNING - Gradient norm (16.81) exceeds explosion threshold (10.0).
+2026-10-07 20:40:23 - exp_001 - WARNING - Gradient norm (12.57) exceeds explosion threshold (10.0).
+2026-10-07 20:40:24 - exp_001 - WARNING - Gradient norm (18.72) exceeds explosion threshold (10.0).
+2026-10-07 20:40:24 - exp_001 - WARNING - Gradient norm (15.70) exceeds explosion threshold (10.0).
+2026-10-07 20:40:25 - exp_001 - WARNING - Gradient norm (20.16) exceeds explosion threshold (10.0).
+2026-10-07 20:40:25 - exp_001 - WARNING - Gradient norm (16.66) exceeds explosion threshold (10.0).
+2026-10-07 20:40:26 - exp_001 - WARNING - Gradient norm (17.52) exceeds explosion threshold (10.0).
+2026-10-07 20:40:26 - exp_001 - WARNING - Gradient norm (14.07) exceeds explosion threshold (10.0).
+2026-10-07 20:40:27 - exp_001 - WARNING - Gradient norm (16.20) exceeds explosion threshold (10.0).
+2026-10-07 20:40:27 - exp_001 - WARNING - Gradient norm (14.06) exceeds explosion threshold (10.0).
+2026-10-07 20:40:27 - exp_001 - WARNING - Gradient norm (16.22) exceeds explosion threshold (10.0).
+2026-10-07 20:40:28 - exp_001 - WARNING - Gradient norm (16.03) exceeds explosion threshold (10.0).
+2026-10-07 20:40:28 - exp_001 - WARNING - Gradient norm (14.55) exceeds explosion threshold (10.0).
+2026-10-07 20:40:29 - exp_001 - WARNING - Gradient norm (16.44) exceeds explosion threshold (10.0).
+2026-10-07 20:40:29 - exp_001 - WARNING - Gradient norm (13.64) exceeds explosion threshold (10.0).
+2026-10-07 20:40:29 - exp_001 - WARNING - Gradient norm (13.23) exceeds explosion threshold (10.0).
+2026-10-07 20:40:30 - exp_001 - WARNING - Gradient norm (13.10) exceeds explosion threshold (10.0).
+2026-10-07 20:40:30 - exp_001 - WARNING - Gradient norm (17.25) exceeds explosion threshold (10.0).
+2026-10-07 20:40:31 - exp_001 - WARNING - Gradient norm (13.66) exceeds explosion threshold (10.0).
+2026-10-07 20:40:31 - exp_001 - WARNING - Gradient norm (14.82) exceeds explosion threshold (10.0).
+2026-10-07 20:40:31 - exp_001 - WARNING - Gradient norm (19.60) exceeds explosion threshold (10.0).
+2026-10-07 20:40:32 - exp_001 - WARNING - Gradient norm (15.29) exceeds explosion threshold (10.0).
+2026-10-07 20:40:32 - exp_001 - WARNING - Gradient norm (12.97) exceeds explosion threshold (10.0).
+2026-10-07 20:40:32 - exp_001 - WARNING - Gradient norm (14.25) exceeds explosion threshold (10.0).
+2026-10-07 20:40:32 - exp_001 - WARNING - Gradient norm (15.44) exceeds explosion threshold (10.0).
+2026-10-07 20:40:32 - exp_001 - WARNING - Gradient norm (17.06) exceeds explosion threshold (10.0).
+2026-10-07 20:40:33 - exp_001 - WARNING - Gradient norm (19.13) exceeds explosion threshold (10.0).
+2026-10-07 20:40:34 - exp_001 - INFO - Epoch 6/60 - Time: 12.3s - Train Loss: 1.9526 - Val Loss: 1.8475 - Val F1: 0.3541
